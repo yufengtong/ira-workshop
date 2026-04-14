@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网址导航管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script>
+        // 配置Tailwind - 南方基金风格配色
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // 品牌主色
+                        'brand-red': '#E72521',
+                        'brand-red-hover': '#D41F1B',
+                        'brand-blue': '#004098',
+                        'brand-blue-hover': '#003380',
+                        'dark-blue': '#0B264A',
+                        // 中性色
+                        'neutral-white': '#FFFFFF',
+                        'neutral-title': '#333333',
+                        'neutral-text': '#222222',
+                        'neutral-muted': '#888888',
+                        'neutral-bg': '#EFF4F9',
+                        'neutral-light-blue': '#E5F8FD',
+                    },
+                    fontFamily: {
+                        sans: ['-apple-system', 'system-ui', 'Segoe UI', 'Roboto', 'Ubuntu', 'Cantarell', 'Noto Sans', 'sans-serif', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', 'Helvetica', 'Arial'],
+                    },
+                    spacing: {
+                        'page': '131.67px',
+                        'section': '60px',
+                        'module': '40px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 系统字体栈 */
+        body {
+            font-family: -apple-system, "system-ui", "Segoe UI", system-ui, Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial;
+            color: #222222;
+            line-height: 1.6;
+        }
+
+        /* 标题样式 */
+        h1 { font-size: 28px; font-weight: 500; color: #333333; }
+        h2 { font-size: 24px; font-weight: 500; color: #333333; }
+        h3 { font-size: 20px; font-weight: 500; color: #333333; }
+
+        /* 主要按钮 - 品牌红 */
+        .btn-primary {
+            background-color: #E72521;
+            color: #FFFFFF;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 400;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover { background-color: #D41F1B; }
+
+        /* 次要按钮 - 企业蓝 */
+        .btn-secondary {
+            background-color: #004098;
+            color: #FFFFFF;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: 400;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary:hover { background-color: #003380; }
+
+        /* 文本链接 */
+        .link-text {
+            color: #004098;
+            text-decoration: none;
+            font-size: 14px;
+            transition: text-decoration 0.2s ease;
+        }
+
+        .link-text:hover { text-decoration: underline; }
+
+        /* 卡片样式 - 扁平设计 */
+        .card {
+            background-color: #FFFFFF;
+            border: none;
+            border-radius: 0;
+            transition: background-color 0.2s ease;
+        }
+
+        .card:hover {
+            background-color: #EFF4F9;
+        }
+
+        /* 网址卡片 */
+        .url-card {
+            background-color: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            border-radius: 8px;
+            padding: 16px;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .url-card:hover {
+            border-color: #004098;
+            background-color: #F8FAFC;
+        }
+
+        /* 分类头部 */
+        .category-header {
+            background-color: #FFFFFF;
+            border-bottom: 2px solid #004098;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .category-header:hover {
+            background-color: #EFF4F9;
+        }
+
+        /* 分类内容区域 */
+        .category-content {
+            background-color: #FFFFFF;
+            padding: 20px;
+        }
+
+        /* 版本标签 */
+        .version-tag {
+            background-color: #EFF4F9;
+            color: #004098;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .version-tag:hover {
+            background-color: #E5F8FD;
+        }
+
+        .version-tag.active {
+            background-color: #004098;
+            color: #FFFFFF;
+        }
+
+        /* 输入框 */
+        .input-field {
+            background-color: #FFFFFF;
+            border: 1px solid #E0E0E0;
+            border-radius: 4px;
+            padding: 10px 16px;
+            font-size: 16px;
+            color: #222222;
+            width: 100%;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #004098;
+        }
+
+        /* 页脚 */
+        .footer {
+            background-color: #0B264A;
+            color: #FFFFFF;
+            padding: 60px 0 40px;
+        }
+
+        .footer a {
+            color: #FFFFFF;
+            text-decoration: none;
+            font-size: 14px;
+            transition: opacity 0.2s ease;
+        }
+
+        .footer a:hover {
+            opacity: 0.8;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            background-color: #FFFFFF;
+            border-bottom: 1px solid #E5E7EB;
+            padding: 0 131.67px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        /* 操作按钮默认隐藏，悬停显示 */
+        .url-actions {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .url-card:hover .url-actions {
+            opacity: 1;
+        }
+
+        .action-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            color: #888888;
+        }
+
+        .action-btn:hover {
+            background-color: #EFF4F9;
+            color: #004098;
+            border-color: #004098;
+        }
+
+        .action-btn.delete:hover {
+            background-color: #FEF2F2;
+            color: #E72521;
+            border-color: #E72521;
+        }
+
+        /* 折叠动画 */
+        .category-section {
+            margin-bottom: 40px;
+        }
+
+        .category-section.collapsed .category-content {
+            display: none;
+        }
+
+        .category-section.collapsed .collapse-icon {
+            transform: rotate(-90deg);
+        }
+
+        .collapse-icon {
+            transition: transform 0.3s ease;
+            color: #004098;
+        }
+
+        /* 模态框 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: #FFFFFF;
+            border-radius: 0;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        /* 页面间距 */
+        .page-container {
+            padding: 60px 131.67px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 响应式 */
+        @media (max-width: 1024px) {
+            .navbar {
+                padding: 0 40px;
+            }
+            .page-container {
+                padding: 40px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .navbar {
+                padding: 0 20px;
+                height: 60px;
+            }
+            .page-container {
+                padding: 20px;
+            }
+            h1 { font-size: 24px; }
+            h2 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body class="bg-white">
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="flex items-center gap-3">
+            <i class="fas fa-compass text-2xl" style="color: #004098;"></i>
+            <h1 class="text-xl font-medium" style="color: #333333;">网址导航管理</h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <button class="btn-secondary" onclick="openVersionModal()">
+                <i class="fas fa-code-branch"></i>
+                版本管理
+            </button>
+            <button class="btn-primary" onclick="openAddUrlModal()">
+                <i class="fas fa-plus"></i>
+                添加网址
+            </button>
+        </div>
+    </nav>
+
+    <!-- 版本选择栏 -->
+    <div style="background-color: #EFF4F9; border-bottom: 1px solid #E5E7EB;">
+        <div class="page-container" style="padding-top: 20px; padding-bottom: 20px;">
+            <div class="flex items-center gap-4">
+                <span class="text-sm" style="color: #888888;">当前版本：</span>
+                <div class="flex gap-2" id="versionList">
+                    <span class="version-tag active">默认版本</span>
+                    <span class="version-tag">开发环境</span>
+                    <span class="version-tag">测试环境</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <main class="page-container">
+        <!-- 常用网站分类 -->
+        <div class="category-section" id="category-1">
+            <div class="category-header" onclick="toggleCategory('category-1')">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-star" style="color: #E72521;"></i>
+                    <h2>常用网站</h2>
+                    <span class="text-sm" style="color: #888888;">(4)</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="action-btn" onclick="event.stopPropagation(); renameCategory('category-1')">
+                        <i class="fas fa-edit text-xs"></i>
+                    </button>
+                    <i class="fas fa-chevron-down collapse-icon"></i>
+                </div>
+            </div>
+            <div class="category-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- 网址卡片 1 -->
+                    <div class="url-card">
+                        <div class="url-actions">
+                            <button class="action-btn" onclick="editUrl(1)">
+                                <i class="fas fa-edit text-xs"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="deleteUrl(1)">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                        <a href="https://www.baidu.com" target="_blank" class="block">
+                            <div class="flex items-center gap-3 mb-2">
+                                <i class="fas fa-search text-xl" style="color: #004098;"></i>
+                                <h3 class="text-base font-medium" style="color: #333333;">百度</h3>
+                            </div>
+                            <p class="text-sm truncate" style="color: #888888;">https://www.baidu.com</p>
+                        </a>
+                    </div>
+
+                    <!-- 网址卡片 2 -->
+                    <div class="url-card">
+                        <div class="url-actions">
+                            <button class="action-btn" onclick="editUrl(2)">
+                                <i class="fas fa-edit text-xs"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="deleteUrl(2)">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                        <a href="https://github.com" target="_blank" class="block">
+                            <div class="flex items-center gap-3 mb-2">
+                                <i class="fab fa-github text-xl" style="color: #333333;"></i>
+                                <h3 class="text-base font-medium" style="color: #333333;">GitHub</h3>
+                            </div>
+                            <p class="text-sm truncate" style="color: #888888;">https://github.com</p>
+                        </a>
+                    </div>
+
+                    <!-- 网址卡片 3 -->
+                    <div class="url-card">
+                        <div class="url-actions">
+                            <button class="action-btn" onclick="editUrl(3)">
+                                <i class="fas fa-edit text-xs"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="deleteUrl(3)">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                        <a href="https://stackoverflow.com" target="_blank" class="block">
+                            <div class="flex items-center gap-3 mb-2">
+                                <i class="fab fa-stack-overflow text-xl" style="color: #E72521;"></i>
+                                <h3 class="text-base font-medium" style="color: #333333;">Stack Overflow</h3>
+                            </div>
+                            <p class="text-sm truncate" style="color: #888888;">https://stackoverflow.com</p>
+                        </a>
+                    </div>
+
+                    <!-- 网址卡片 4 -->
+                    <div class="url-card">
+                        <div class="url-actions">
+                            <button class="action-btn" onclick="editUrl(4)">
+                                <i class="fas fa-edit text-xs"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="deleteUrl(4)">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                        <a href="https://www.google.com" target="_blank" class="block">
+                            <div class="flex items-center gap-3 mb-2">
+                                <i class="fab fa-google text-xl" style="color: #004098;"></i>
+                                <h3 class="text-base font-medium" style="color: #333333;">Google</h3>
+                            </div>
+                            <p class="text-sm truncate" style="color: #888888;">https://www.google.com</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 开发工具分类 -->
+        <div class="category-section" id="category-2">
+            <div class="category-header" onclick="toggleCategory('category-2')">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-tools" style="color: #004098;"></i>
+                    <h2>开发工具</h2>
+                    <span class="text-sm" style="color: #888888;">(3)</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="action-btn" onclick="event.stopPropagation(); renameCategory('category-2')">
+                        <i class="fas fa-edit text-xs"></i>
+                    </button>
+                    <i class="fas fa-chevron-down collapse-icon"></i>
+                </div>
+            </div>
+            <div class="category-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- 网址卡片 -->
+                    <div class="url-card">
+                        <div class="url-actions">
+                            <button class="action-btn" onclick="editUrl(5)">
+                                <i class="fas fa-edit text-xs"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="deleteUrl(5)">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                        <a href="https://code.visualstudio.com" target="_blank" class="block">
+                            <div class="flex items-center gap-3 mb-2">
+                                <i class="fas fa-code text-xl" style="color: #004098;"></i>
+                                <h3 class="text-base font-medium" style="color: #333333;">VS Code</h3>
+                            </div>
+                            <p class="text-sm truncate" style="color: #888888;">https://code.visualstudio.com</p>
+                        </a>
+                    </div>
+
+                    <div class="url-card">
+                        <div class="url-actions">
+                            <button class="action-btn" onclick="editUrl(6)">
+                                <i class="fas fa-edit text-xs"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="deleteUrl(6)">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                        <a href="https://www.postman.com" target="_blank" class="block">
+                            <div class="flex items-center gap-3 mb-2">
+                                <i class="fas fa-paper-plane text-xl" style="color: #E72521;"></i>
+                                <h3 class="text-base font-medium" style="color: #333333;">Postman</h3>
+                            </div>
+                            <p class="text-sm truncate" style="color: #888888;">https://www.postman.com</p>
+                        </a>
+                    </div>
+
+                    <div class="url-card">
+                        <div class="url-actions">
+                            <button class="action-btn" onclick="editUrl(7)">
+                                <i class="fas fa-edit text-xs"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="deleteUrl(7)">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                        <a href="https://www.docker.com" target="_blank" class="block">
+                            <div class="flex items-center gap-3 mb-2">
+                                <i class="fab fa-docker text-xl" style="color: #004098;"></i>
+                                <h3 class="text-base font-medium" style="color: #333333;">Docker</h3>
+                            </div>
+                            <p class="text-sm truncate" style="color: #888888;">https://www.docker.com</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 文档资源分类 -->
+        <div class="category-section" id="category-3">
+            <div class="category-header" onclick="toggleCategory('category-3')">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-book" style="color: #004098;"></i>
+                    <h2>文档资源</h2>
+                    <span class="text-sm" style="color: #888888;">(2)</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button class="action-btn" onclick="event.stopPropagation(); renameCategory('category-3')">
+                        <i class="fas fa-edit text-xs"></i>
+                    </button>
+                    <i class="fas fa-chevron-down collapse-icon"></i>
+                </div>
+            </div>
+            <div class="category-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="url-card">
+                        <div class="url-actions">
+                            <button class="action-btn" onclick="editUrl(8)">
+                                <i class="fas fa-edit text-xs"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="deleteUrl(8)">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                        <a href="https://developer.mozilla.org" target="_blank" class="block">
+                            <div class="flex items-center gap-3 mb-2">
+                                <i class="fab fa-firefox text-xl" style="color: #E72521;"></i>
+                                <h3 class="text-base font-medium" style="color: #333333;">MDN Web Docs</h3>
+                            </div>
+                            <p class="text-sm truncate" style="color: #888888;">https://developer.mozilla.org</p>
+                        </a>
+                    </div>
+
+                    <div class="url-card">
+                        <div class="url-actions">
+                            <button class="action-btn" onclick="editUrl(9)">
+                                <i class="fas fa-edit text-xs"></i>
+                            </button>
+                            <button class="action-btn delete" onclick="deleteUrl(9)">
+                                <i class="fas fa-trash text-xs"></i>
+                            </button>
+                        </div>
+                        <a href="https://docs.python.org" target="_blank" class="block">
+                            <div class="flex items-center gap-3 mb-2">
+                                <i class="fab fa-python text-xl" style="color: #004098;"></i>
+                                <h3 class="text-base font-medium" style="color: #333333;">Python Docs</h3>
+                            </div>
+                            <p class="text-sm truncate" style="color: #888888;">https://docs.python.org</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="page-container" style="padding-top: 0; padding-bottom: 0;">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h3 class="text-lg font-medium mb-4" style="color: #FFFFFF;">关于系统</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#">系统介绍</a></li>
+                        <li><a href="#">使用指南</a></li>
+                        <li><a href="#">更新日志</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-medium mb-4" style="color: #FFFFFF;">功能模块</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#">网址管理</a></li>
+                        <li><a href="#">版本控制</a></li>
+                        <li><a href="#">分类管理</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-medium mb-4" style="color: #FFFFFF;">帮助支持</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#">常见问题</a></li>
+                        <li><a href="#">反馈建议</a></li>
+                        <li><a href="#">联系管理员</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-medium mb-4" style="color: #FFFFFF;">联系方式</h3>
+                    <ul class="space-y-2">
+                        <li><i class="fas fa-envelope mr-2"></i>admin@example.com</li>
+                        <li><i class="fas fa-phone mr-2"></i>400-123-4567</li>
+                    </ul>
+                </div>
+            </div>
+            <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; text-align: center;">
+                <p style="color: rgba(255,255,255,0.6); font-size: 14px;">网址导航管理系统 &copy; 2025 版权所有</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 添加/编辑网址模态框 -->
+    <div class="modal-overlay" id="urlModal">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h2 id="urlModalTitle">添加网址</h2>
+                <button onclick="closeUrlModal()" class="action-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="urlForm" onsubmit="saveUrl(event)">
+                <input type="hidden" id="urlId">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2" style="color: #333333;">网址名称</label>
+                    <input type="text" id="urlTitle" class="input-field" placeholder="请输入网址名称" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2" style="color: #333333;">网址链接</label>
+                    <input type="url" id="urlLink" class="input-field" placeholder="https://example.com" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2" style="color: #333333;">所属分类</label>
+                    <select id="urlCategory" class="input-field">
+                        <option value="常用网站">常用网站</option>
+                        <option value="开发工具">开发工具</option>
+                        <option value="文档资源">文档资源</option>
+                    </select>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium mb-2" style="color: #333333;">图标类名</label>
+                    <input type="text" id="urlIcon" class="input-field" placeholder="fas fa-globe">
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button type="button" class="btn-secondary" onclick="closeUrlModal()">取消</button>
+                    <button type="submit" class="btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 版本管理模态框 -->
+    <div class="modal-overlay" id="versionModal">
+        <div class="modal-content">
+            <div class="flex items-center justify-between mb-6">
+                <h2>版本管理</h2>
+                <button onclick="closeVersionModal()" class="action-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-6">
+                <div class="flex gap-2 mb-4">
+                    <input type="text" id="newVersionName" class="input-field" placeholder="新版本名称">
+                    <button class="btn-primary" onclick="createVersion()">
+                        <i class="fas fa-plus"></i>
+                        创建
+                    </button>
+                </div>
+                <div class="space-y-2" id="versionListModal">
+                    <div class="flex items-center justify-between p-3 rounded" style="background-color: #E5F8FD; border-left: 3px solid #004098;">
+                        <span class="font-medium" style="color: #004098;">默认版本</span>
+                        <span class="text-xs px-2 py-1 rounded" style="background-color: #004098; color: #FFFFFF;">当前</span>
+                    </div>
+                    <div class="flex items-center justify-between p-3 rounded hover:bg-gray-50">
+                        <span style="color: #333333;">开发环境</span>
+                        <button class="action-btn delete" onclick="deleteVersion(this)">
+                            <i class="fas fa-trash text-xs"></i>
+                        </button>
+                    </div>
+                    <div class="flex items-center justify-between p-3 rounded hover:bg-gray-50">
+                        <span style="color: #333333;">测试环境</span>
+                        <button class="action-btn delete" onclick="deleteVersion(this)">
+                            <i class="fas fa-trash text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 切换分类折叠
+        function toggleCategory(categoryId) {
+            const category = document.getElementById(categoryId);
+            category.classList.toggle('collapsed');
+        }
+
+        // 打开添加网址模态框
+        function openAddUrlModal() {
+            document.getElementById('urlModalTitle').textContent = '添加网址';
+            document.getElementById('urlForm').reset();
+            document.getElementById('urlId').value = '';
+            document.getElementById('urlModal').classList.add('active');
+        }
+
+        // 打开编辑网址模态框
+        function editUrl(id) {
+            event.preventDefault();
+            event.stopPropagation();
+            document.getElementById('urlModalTitle').textContent = '编辑网址';
+            document.getElementById('urlId').value = id;
+            // 这里应该填充实际数据
+            document.getElementById('urlModal').classList.add('active');
+        }
+
+        // 关闭网址模态框
+        function closeUrlModal() {
+            document.getElementById('urlModal').classList.remove('active');
+        }
+
+        // 保存网址
+        function saveUrl(event) {
+            event.preventDefault();
+            // 这里应该发送请求保存数据
+            closeUrlModal();
+            alert('保存成功！');
+        }
+
+        // 删除网址
+        function deleteUrl(id) {
+            event.preventDefault();
+            event.stopPropagation();
+            if (confirm('确定要删除这个网址吗？')) {
+                // 这里应该发送删除请求
+                alert('删除成功！');
+            }
+        }
+
+        // 重命名分类
+        function renameCategory(categoryId) {
+            event.stopPropagation();
+            const newName = prompt('请输入新的分类名称：');
+            if (newName) {
+                // 这里应该发送重命名请求
+                alert('重命名成功！');
+            }
+        }
+
+        // 打开版本管理模态框
+        function openVersionModal() {
+            document.getElementById('versionModal').classList.add('active');
+        }
+
+        // 关闭版本管理模态框
+        function closeVersionModal() {
+            document.getElementById('versionModal').classList.remove('active');
+        }
+
+        // 创建新版本
+        function createVersion() {
+            const name = document.getElementById('newVersionName').value;
+            if (name) {
+                // 这里应该发送创建请求
+                alert('版本创建成功！');
+                document.getElementById('newVersionName').value = '';
+            }
+        }
+
+        // 删除版本
+        function deleteVersion(btn) {
+            if (confirm('确定要删除这个版本吗？')) {
+                // 这里应该发送删除请求
+                btn.closest('.flex').remove();
+            }
+        }
+
+        // 版本切换
+        document.querySelectorAll('.version-tag').forEach(tag => {
+            tag.addEventListener('click', function() {
+                document.querySelectorAll('.version-tag').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // 点击模态框外部关闭
+        document.querySelectorAll('.modal-overlay').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

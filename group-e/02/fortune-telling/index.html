@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>玄机命理 - 八字起名与命理分析</title>
+    <meta name="description" content="专业的命理解析工具，提供八字分析、智能起名、名字拆解等功能">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- 样式 -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- 背景装饰 -->
+    <div class="bg-decoration">
+        <div class="stars"></div>
+    </div>
+
+    <!-- 头部 -->
+    <header>
+        <div class="logo">
+            <div class="logo-icon">玄</div>
+            <h1 class="logo-text">玄机命理</h1>
+        </div>
+        <p class="subtitle">探索命运奥秘 · 传承东方智慧</p>
+    </header>
+
+    <!-- 导航 -->
+    <nav>
+        <button class="nav-btn active" data-section="naming">
+            <span>智能起名</span>
+        </button>
+        <button class="nav-btn" data-section="analysis">
+            <span>名字拆解</span>
+        </button>
+        <button class="nav-btn" data-section="bazi">
+            <span>八字分析</span>
+        </button>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main>
+        <!-- 智能起名 -->
+        <section id="naming" class="section active">
+            <div class="card">
+                <h2 class="card-title">智能起名</h2>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">
+                    根据生辰八字、五行喜忌，为您推荐吉祥如意的名字
+                </p>
+                
+                <form id="namingForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="surname">姓氏 <span class="required">*</span></label>
+                            <input type="text" id="surname" placeholder="请输入姓氏" maxlength="2" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>性别 <span class="required">*</span></label>
+                            <div class="radio-group">
+                                <label class="radio-label">
+                                    <input type="radio" name="gender" value="男" checked>
+                                    <span>男</span>
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" name="gender" value="女">
+                                    <span>女</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="birthYear">出生年份 <span class="required">*</span></label>
+                            <select id="birthYear" required></select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="birthMonth">出生月份 <span class="required">*</span></label>
+                            <select id="birthMonth" required>
+                                <option value="1">一月</option>
+                                <option value="2">二月</option>
+                                <option value="3">三月</option>
+                                <option value="4">四月</option>
+                                <option value="5">五月</option>
+                                <option value="6">六月</option>
+                                <option value="7">七月</option>
+                                <option value="8">八月</option>
+                                <option value="9">九月</option>
+                                <option value="10">十月</option>
+                                <option value="11">十一月</option>
+                                <option value="12">十二月</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="birthDay">出生日期 <span class="required">*</span></label>
+                            <select id="birthDay" required></select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="birthHour">出生时辰 <span class="required">*</span></label>
+                            <select id="birthHour" required>
+                                <option value="0">子时 (23:00-01:00)</option>
+                                <option value="2">丑时 (01:00-03:00)</option>
+                                <option value="4">寅时 (03:00-05:00)</option>
+                                <option value="6">卯时 (05:00-07:00)</option>
+                                <option value="8">辰时 (07:00-09:00)</option>
+                                <option value="10">巳时 (09:00-11:00)</option>
+                                <option value="12">午时 (11:00-13:00)</option>
+                                <option value="14">未时 (13:00-15:00)</option>
+                                <option value="16">申时 (15:00-17:00)</option>
+                                <option value="18">酉时 (17:00-19:00)</option>
+                                <option value="20">戌时 (19:00-21:00)</option>
+                                <option value="22">亥时 (21:00-23:00)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">开始起名</button>
+                        <button type="reset" class="btn btn-secondary">重置</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 起名结果 -->
+            <div id="namingResult" class="result-container" style="display: none;">
+                <div class="card">
+                    <h2 class="card-title">推荐名字</h2>
+                    <div id="nameList" class="name-list"></div>
+                </div>
+            </div>
+
+            <div id="namingEmpty" class="result-container">
+                <div class="result-empty">
+                    <div class="result-empty-icon">☯</div>
+                    <p>填写信息后点击"开始起名"，获取专属推荐</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 名字拆解 -->
+        <section id="analysis" class="section">
+            <div class="card">
+                <h2 class="card-title">名字拆解</h2>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">
+                    解析姓名中每个字的五行属性、笔画数理、三才五格
+                </p>
+                
+                <form id="analysisForm">
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label for="fullName">姓名 <span class="required">*</span></label>
+                            <input type="text" id="fullName" placeholder="请输入姓名（2-4个字）" maxlength="4" required>
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">开始分析</button>
+                        <button type="reset" class="btn btn-secondary">重置</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 分析结果 -->
+            <div id="analysisResult" class="result-container" style="display: none;">
+                <!-- 综合评分 -->
+                <div class="card">
+                    <h2 class="card-title">综合评分</h2>
+                    <div class="score-display">
+                        <div class="score-number" id="overallScore">85</div>
+                        <div class="score-label">总分 100</div>
+                        <div class="score-comment" id="scoreComment">名字五行平衡，寓意吉祥</div>
+                    </div>
+                </div>
+
+                <!-- 逐字分析 -->
+                <div class="card">
+                    <h2 class="card-title">逐字解析</h2>
+                    <div id="charAnalysis" class="char-analysis"></div>
+                    <div id="charDetails" style="margin-top: 20px;"></div>
+                </div>
+
+                <!-- 五行分布 -->
+                <div class="card">
+                    <h2 class="card-title">五行分布</h2>
+                    <div id="nameWuxingChart" class="wuxing-chart"></div>
+                    <div id="nameWuxingAnalysis" style="margin-top: 15px; color: var(--text-secondary);"></div>
+                </div>
+
+                <!-- 三才五格 -->
+                <div class="card">
+                    <h2 class="card-title">三才五格</h2>
+                    <table class="wuge-table">
+                        <thead>
+                            <tr>
+                                <th>天格</th>
+                                        <th>人格</th>
+                                        <th>地格</th>
+                                        <th>外格</th>
+                                        <th>总格</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr id="wugeNumbers">
+                                <td class="number">-</td>
+                                <td class="number">-</td>
+                                <td class="number">-</td>
+                                <td class="number">-</td>
+                                <td class="number">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div id="sancaiAnalysis" style="margin-top: 15px; color: var(--text-secondary);"></div>
+                </div>
+            </div>
+
+            <div id="analysisEmpty" class="result-container">
+                <div class="result-empty">
+                    <div class="result-empty-icon">文</div>
+                    <p>输入姓名后点击"开始分析"，深入了解名字奥秘</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 八字分析 -->
+        <section id="bazi" class="section">
+            <div class="card">
+                <h2 class="card-title">八字分析</h2>
+                <p style="color: var(--text-muted); margin-bottom: 20px;">
+                    根据出生时间排出八字命盘，分析五行喜忌与性格运势
+                </p>
+                
+                <form id="baziForm">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="baziYear">出生年份 <span class="required">*</span></label>
+                            <select id="baziYear" required></select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="baziMonth">出生月份 <span class="required">*</span></label>
+                            <select id="baziMonth" required>
+                                <option value="1">一月</option>
+                                <option value="2">二月</option>
+                                <option value="3">三月</option>
+                                <option value="4">四月</option>
+                                <option value="5">五月</option>
+                                <option value="6">六月</option>
+                                <option value="7">七月</option>
+                                <option value="8">八月</option>
+                                <option value="9">九月</option>
+                                <option value="10">十月</option>
+                                <option value="11">十一月</option>
+                                <option value="12">十二月</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="baziDay">出生日期 <span class="required">*</span></label>
+                            <select id="baziDay" required></select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="baziHour">出生时辰 <span class="required">*</span></label>
+                            <select id="baziHour" required>
+                                <option value="0">子时 (23:00-01:00)</option>
+                                <option value="2">丑时 (01:00-03:00)</option>
+                                <option value="4">寅时 (03:00-05:00)</option>
+                                <option value="6">卯时 (05:00-07:00)</option>
+                                <option value="8">辰时 (07:00-09:00)</option>
+                                <option value="10">巳时 (09:00-11:00)</option>
+                                <option value="12">午时 (11:00-13:00)</option>
+                                <option value="14">未时 (13:00-15:00)</option>
+                                <option value="16">申时 (15:00-17:00)</option>
+                                <option value="18">酉时 (17:00-19:00)</option>
+                                <option value="20">戌时 (19:00-21:00)</option>
+                                <option value="22">亥时 (21:00-23:00)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">排出八字</button>
+                        <button type="reset" class="btn btn-secondary">重置</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 八字结果 -->
+            <div id="baziResult" class="result-container" style="display: none;">
+                <!-- 八字四柱 -->
+                <div class="card">
+                    <h2 class="card-title">八字命盘</h2>
+                    <div id="baziDisplay" class="bazi-display"></div>
+                    <div id="shengxiao" style="text-align: center; margin-top: 15px; color: var(--gold-primary); font-size: 1.1rem;"></div>
+                </div>
+
+                <!-- 五行分布 -->
+                <div class="card">
+                    <h2 class="card-title">五行分布</h2>
+                    <div id="wuxingChart" class="wuxing-chart"></div>
+                    <div id="wuxingAnalysis" style="margin-top: 15px; color: var(--text-secondary);"></div>
+                </div>
+
+                <!-- 日主分析 -->
+                <div class="card">
+                    <h2 class="card-title">日主分析</h2>
+                    <div id="dayMasterAnalysis" class="analysis-grid"></div>
+                </div>
+
+                <!-- 喜用神 -->
+                <div class="card">
+                    <h2 class="card-title">喜用神分析</h2>
+                    <div id="xiyongshenAnalysis" class="analysis-grid"></div>
+                </div>
+
+                <!-- 性格分析 -->
+                <div class="card">
+                    <h2 class="card-title">性格特点</h2>
+                    <div id="personalityAnalysis" style="color: var(--text-secondary); line-height: 2;"></div>
+                </div>
+            </div>
+
+            <div id="baziEmpty" class="result-container">
+                <div class="result-empty">
+                    <div class="result-empty-icon">☯</div>
+                    <p>输入出生时间后点击"排出八字"，探索您的命理奥秘</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer>
+        <p>玄机命理 - 传承东方智慧</p>
+        <p class="disclaimer">
+            本工具仅供娱乐参考，命理分析结果不代表真实情况，请理性看待
+        </p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/bazi.js"></script>
+    <script src="js/characters.js"></script>
+    <script src="js/naming.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

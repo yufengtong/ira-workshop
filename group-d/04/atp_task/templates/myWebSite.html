@@ -1,0 +1,1977 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网址导航管理</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script>
+        // 配置Tailwind自定义颜色和字体
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#6366F1',
+                        accent: '#10B981',
+                        neutral: '#64748B',
+                        light: '#F8FAFC',
+                        dark: '#1E293B',
+                        'primary-900': 'rgba(59, 130, 246, 0.9)', // 90%透明度的primary
+                        'secondary-900': 'rgba(99, 102, 241, 0.9)', // 90%透明度的secondary
+                        'black-500': 'rgba(0, 0, 0, 0.5)' // 50%透明度的black
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+            .hover-lift {
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+            .hover-lift:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            }
+            .version-active {
+                @apply bg-primary text-white border-primary;
+            }
+            .category-content {
+                max-height: 2000px;
+                padding-bottom: 1.25rem;
+                transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+                opacity: 1;
+            }
+            .category-collapsed .category-content {
+                max-height: 0;
+                padding-bottom: 0;
+                overflow: hidden;
+                opacity: 0;
+                transition: max-height 0.3s ease-in, opacity 0.2s ease-in;
+            }
+            .rotate-icon {
+                transition: transform 0.3s ease;
+            }
+            .category-collapsed .rotate-icon {
+                transform: rotate(-90deg);
+            }
+            /* 操作按钮默认隐藏 */
+            .url-actions {
+                opacity: 0;
+                transition: opacity 0.2s ease;
+            }
+            .url-card:hover .url-actions {
+                opacity: 1;
+            }
+            /* 分类操作按钮 */
+            .category-actions {
+                opacity: 0;
+                transition: opacity 0.2s ease;
+                display: flex;
+                gap: 0.5rem;
+            }
+            .category-header:hover .category-actions {
+                opacity: 1;
+            }
+            .category-action-btn {
+                width: 24px;
+                height: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 4px;
+                transition: all 0.2s ease;
+            }
+            .rename-btn:hover {
+                background-color: #e3f2fd;
+                color: #1976d2;
+            }
+            .delete-category-btn:hover {
+                background-color: #ffebee;
+                color: #d32f2f;
+            }
+            /* 固定URL卡片大小并处理超长内容 */
+            .fixed-size-card {
+                height: 90px;
+                display: flex;
+                flex-direction: column;
+            }
+            .truncate-text {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .content-container {
+                overflow: hidden;
+                flex-grow: 1;
+            }
+            /* 回到顶部按钮样式 */
+            #backToTop {
+                cursor: pointer;
+                opacity: 0;
+                visibility: hidden;
+                transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+                transform: translateY(20px);
+            }
+            #backToTop.visible {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+            }
+            /* 拖拽排序相关样式 */
+            .dragging {
+                opacity: 0.5;
+                transform: scale(1.02);
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+                background-color: #e3f2fd;
+                border: 2px dashed #3B82F6;
+            }
+            .drag-over {
+                transform: translateY(45px);
+            }
+            .category-drag-over {
+                transform: translateX(20px);
+            }
+            .drag-handle {
+                cursor: move;
+                opacity: 0.5;
+                transition: opacity 0.2s ease;
+            }
+            .url-card:hover .drag-handle,
+            .category-header:hover .category-drag-handle {
+                opacity: 1;
+            }
+            /* 分类拖拽手柄样式 */
+            .category-drag-handle {
+                cursor: move;
+                margin-right: 8px;
+                opacity: 0.3;
+                transition: opacity 0.2s ease;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans text-dark">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex flex-wrap items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-compass text-primary text-2xl"></i>
+                <h1 class="text-xl md:text-2xl font-bold text-primary">网址导航管理</h1>
+            </div>
+
+            <!-- 版本管理区域 -->
+            <div class="w-full md:w-auto mt-3 md:mt-0 mb-3 md:mb-0 flex flex-wrap items-center gap-2">
+                <span class="text-sm text-gray-500 whitespace-nowrap">当前版本:</span>
+                <select id="versionSelector" class="text-sm px-3 py-1.5 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all">
+                    <!-- 版本选项将动态生成 -->
+                </select>
+                <button id="createVersionBtn" class="text-sm bg-secondary hover:bg-secondary-900 text-white px-3 py-1.5 rounded-lg flex items-center transition-all">
+                    <i class="fa fa-copy mr-1.5"></i>复制版本
+                </button>
+            </div>
+
+            <div class="flex items-center w-full md:w-auto">
+                <!-- 搜索框 -->
+                <div class="relative w-full md:w-64 mr-3">
+                    <input type="text" id="searchInput"
+                           class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                           placeholder="搜索网址...">
+                    <i class="fa fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                </div>
+
+                <!-- 批量操作按钮组 -->
+                <div class="flex gap-2">
+                    <button id="expandAllBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg flex items-center transition-all">
+                        <i class="fa fa-plus-square mr-1.5 hidden sm:inline"></i>
+                        <span class="hidden sm:inline">全部展开</span>
+                        <span class="sm:hidden">展开</span>
+                    </button>
+                    <button id="collapseAllBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg flex items-center transition-all">
+                        <i class="fa fa-minus-square mr-1.5 hidden sm:inline"></i>
+                        <span class="hidden sm:inline">全部折叠</span>
+                        <span class="sm:hidden">折叠</span>
+                    </button>
+
+                    <!-- 添加网址按钮 -->
+                    <button id="addUrlBtn"
+                            class="bg-primary hover:bg-primary-900 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all">
+                        <i class="fa fa-plus"></i>
+                        <span class="hidden sm:inline">添加网址</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 版本创建模态框 -->
+    <div id="versionModal" class="fixed inset-0 bg-black-500 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-md mx-4 transform transition-all duration-300 scale-95 opacity-0" id="versionModalContent">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-dark">创建新版本</h2>
+                    <button id="closeVersionModal" class="text-gray-500 hover:text-gray-700 transition-colors">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <form id="versionForm">
+                    <input type="hidden" id="sourceVersionId">
+
+                    <div class="mb-4">
+                        <label for="versionName" class="block text-sm font-medium text-gray-700 mb-1">版本名称</label>
+                        <input type="text" id="versionName" required
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                               placeholder="例如：张三的版本">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">复制来源</label>
+                        <select id="sourceVersionSelect" class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all">
+                            <!-- 选项将动态生成 -->
+                        </select>
+                    </div>
+
+                    <div class="flex space-x-3 mt-6">
+                        <button type="button" id="cancelVersionBtn"
+                                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                            取消
+                        </button>
+                        <button type="submit"
+                                class="flex-1 px-4 py-2 bg-secondary hover:bg-secondary-900 text-white rounded-lg transition-colors">
+                            创建
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分类重命名模态框 -->
+    <div id="renameCategoryModal" class="fixed inset-0 bg-black-500 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-md mx-4 transform transition-all duration-300 scale-95 opacity-0" id="renameCategoryModalContent">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-dark">重命名分类</h2>
+                    <button id="closeRenameCategoryModal" class="text-gray-500 hover:text-gray-700 transition-colors">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <form id="renameCategoryForm">
+                    <input type="hidden" id="renameCategoryId">
+
+                    <div class="mb-4">
+                        <label for="newCategoryName" class="block text-sm font-medium text-gray-700 mb-1">新分类名称</label>
+                        <input type="text" id="newCategoryName" required
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                               placeholder="输入新的分类名称">
+                    </div>
+
+                    <div class="flex space-x-3 mt-6">
+                        <button type="button" id="cancelRenameCategoryBtn"
+                                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                            取消
+                        </button>
+                        <button type="submit"
+                                class="flex-1 px-4 py-2 bg-primary hover:bg-primary-900 text-white rounded-lg transition-colors">
+                            保存
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分类删除确认模态框 -->
+    <div id="deleteCategoryModal" class="fixed inset-0 bg-black-500 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-md mx-4 p-6">
+            <h3 class="text-lg font-bold text-dark mb-4">确认删除分类</h3>
+            <p class="text-gray-600 mb-6" id="deleteCategoryMessage">您确定要删除这个分类及其下所有网址吗？此操作无法撤销。</p>
+            <input type="hidden" id="deleteCategoryName">
+            <div class="flex space-x-3">
+                <button id="cancelDeleteCategoryBtn"
+                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                    取消
+                </button>
+                <button id="confirmDeleteCategoryBtn"
+                        class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
+                    确认删除
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 数据加载提示 -->
+    <div id="loadingIndicator" class="container mx-auto px-4 py-8 text-center text-gray-500">
+        <i class="fa fa-circle-o-notch fa-spin mr-2"></i>正在加载数据...
+    </div>
+
+    <main class="container mx-auto px-4 py-6 hidden" id="mainContent">
+        <!-- 网址分类展示区 -->
+        <div id="urlContainer" class="space-y-4">
+            <!-- 内容将通过JavaScript动态生成 -->
+        </div>
+    </main>
+
+    <!-- 无数据提示 -->
+    <div id="noDataIndicator" class="container mx-auto px-4 py-16 text-center hidden">
+        <i class="fa fa-folder-open text-gray-300 text-5xl mb-4"></i>
+        <p class="text-gray-500 mb-6">无数据</p>
+        <button id="addFirstUrlBtn" class="bg-primary hover:bg-primary-900 text-white px-4 py-2 rounded-lg transition-colors">
+            <i class="fa fa-plus mr-1.5"></i>添加第一个网址
+        </button>
+    </div>
+
+    <!-- 添加/编辑网址的模态框 -->
+    <div id="urlModal" class="fixed inset-0 bg-black-500 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-md mx-4 transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 id="modalTitle" class="text-xl font-bold text-dark">添加新网址</h2>
+                    <button id="closeModal" class="text-gray-500 hover:text-gray-700 transition-colors">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <form id="urlForm">
+                    <input type="hidden" id="urlId">
+
+                    <div class="mb-4">
+                        <label for="urlName" class="block text-sm font-medium text-gray-700 mb-1">网址名称</label>
+                        <input type="text" id="urlName" required
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                               placeholder="例如：百度">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="urlAddress" class="block text-sm font-medium text-gray-700 mb-1">网址链接</label>
+                        <input type="url" id="urlAddress" required
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                               placeholder="例如：https://www.baidu.com">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="urlCategory" class="block text-sm font-medium text-gray-700 mb-1">分类</label>
+                        <input type="text" id="urlCategory" required
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                               placeholder="例如：常用网址">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="urlNotes" class="block text-sm font-medium text-gray-700 mb-1">备注（可选）</label>
+                        <input type="text" id="urlNotes"
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                               placeholder="例如：账号密码信息">
+                    </div>
+
+                    <div class="flex space-x-3 mt-6">
+                        <button type="button" id="cancelBtn"
+                                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                            取消
+                        </button>
+                        <button type="submit"
+                                class="flex-1 px-4 py-2 bg-primary hover:bg-primary-900 text-white rounded-lg transition-colors">
+                            保存
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认删除模态框 -->
+    <div id="deleteModal" class="fixed inset-0 bg-black-500 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-md mx-4 p-6">
+            <h3 class="text-lg font-bold text-dark mb-4">确认删除</h3>
+            <p class="text-gray-600 mb-6">您确定要删除这个网址吗？此操作无法撤销。</p>
+            <input type="hidden" id="deleteUrlId">
+            <div class="flex space-x-3">
+                <button id="cancelDeleteBtn"
+                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                    取消
+                </button>
+                <button id="confirmDeleteBtn"
+                        class="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
+                    确认删除
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 操作成功提示 -->
+    <div id="operationSuccessToast" class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <i class="fa fa-check mr-2"></i>保存成功
+    </div>
+
+    <!-- 错误提示 -->
+    <div id="errorToast" class="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg transform translate-y-20 opacity-0 transition-all duration-300 z-50">
+        <i class="fa fa-exclamation-circle mr-2"></i><span id="errorMessage">保存失败</span>
+    </div>
+
+    <!-- 回到顶部按钮 -->
+    <button id="backToTop" class="fixed bottom-6 right-6 bg-primary hover:bg-primary-900 text-white p-3 rounded-full shadow-lg z-40">
+        <i class="fa fa-arrow-up"></i>
+    </button>
+
+    <footer class="bg-white border-t mt-12 py-6">
+        <div class="container mx-auto px-4 text-center text-gray-500 text-sm">
+            <p>网址导航管理系统 &copy; 2025</p>
+        </div>
+    </footer>
+
+    <script>
+        // 全局数据
+        let officeWebsiteData = {
+            versions: [],
+            officeCurrentVersionId: ""
+        };
+        let officeCurrentVersion = null;
+        // 拖拽排序相关变量
+        let draggedItem = null;
+        let draggedCategory = null;
+        let isDraggingCategory = false;
+        // API基础路径 - 统一管理所有API请求路径
+        const API_BASE_URL = '/get_my_website';
+
+        // 获取当前版本ID的辅助函数
+        function getCurrentVersionId() {
+            return officeWebsiteData.officeCurrentVersionId || 'default';
+        }
+
+        // 显示提示信息
+        function showToast(toastId, message = '') {
+            const toast = document.getElementById(toastId);
+            if (message) {
+                if (toastId === 'errorToast') {
+                    document.getElementById('errorMessage').textContent = message;
+                } else if (toastId === 'operationSuccessToast') {
+                    toast.innerHTML = `<i class="fa fa-check mr-2"></i>${message}`;
+                }
+            }
+            toast.classList.remove('translate-y-20', 'opacity-0');
+
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // 复制到剪贴板
+        function copyToClipboard(text) {
+            if (!text) {
+                showToast('errorToast', '没有可复制的内容');
+                return;
+            }
+
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text)
+                    .then(() => {
+                        showToast('operationSuccessToast', '链接已复制');
+                    })
+                    .catch(err => {
+                        console.error('Clipboard API 复制失败，尝试备用方法:', err);
+                        fallbackCopyText(text);
+                    });
+            } else {
+                fallbackCopyText(text);
+            }
+        }
+
+        // 复制文本的备用方法
+        function fallbackCopyText(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.left = '-9999px';
+
+            document.body.appendChild(textarea);
+            textarea.select();
+
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showToast('operationSuccessToast', '链接已复制');
+                } else {
+                    throw new Error('复制命令执行失败');
+                }
+            } catch (err) {
+                console.error('备用方法复制失败:', err);
+                showToast('errorToast', '复制失败，请手动复制');
+            } finally {
+                document.body.removeChild(textarea);
+            }
+        }
+
+        // 从服务器加载数据
+        async function loadData() {
+            try {
+                let versionId = getCurrentVersionId();
+                // 再次校验，确保版本ID有效
+                if (!versionId || versionId.trim() === '') {
+                    versionId = 'default'; // 强制使用默认版本
+                }
+
+                // 显示加载指示器
+                document.getElementById('loadingIndicator').classList.remove('hidden');
+                document.getElementById('mainContent').classList.add('hidden');
+                document.getElementById('noDataIndicator').classList.add('hidden');
+
+                // 在URL中添加版本ID参数
+                const response = await fetch(`${API_BASE_URL}/data?version_id=${encodeURIComponent(versionId)}`);
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('加载数据失败:', errorText);
+                    throw new Error(`加载数据失败 (${response.status}): ${errorText.substring(0, 100)}`);
+                }
+
+                const data = await response.json();
+                // 确保数据结构完整
+                officeWebsiteData = {
+                    versions: data.versions || [],
+                    officeCurrentVersionId: data.officeCurrentVersionId || versionId
+                };
+
+                // 更新当前版本
+                officeCurrentVersion = getCurrentVersion();
+                return true;
+            } catch (error) {
+                console.error('加载数据失败:', error);
+                showToast('errorToast', '加载数据失败: ' + error.message);
+                return false;
+            } finally {
+                document.getElementById('loadingIndicator').classList.add('hidden');
+            }
+        }
+
+        // 保存数据到服务器
+        async function saveData() {
+            try {
+                const versionId = getCurrentVersionId();
+                if (!versionId) {
+                    showToast('errorToast', '未选择有效版本');
+                    return false;
+                }
+
+                const response = await fetch(`${API_BASE_URL}/data`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        version_id: versionId,
+                        current_version: officeCurrentVersion
+                    }),
+                });
+
+                if (!response.ok) {
+                    const error = await response.json().catch(() => null);
+                    throw new Error(error?.message || `保存数据失败 (${response.status})`);
+                }
+
+                showToast('operationSuccessToast');
+                return true;
+            } catch (error) {
+                console.error('保存数据失败:', error);
+                showToast('errorToast', '保存数据失败: ' + error.message);
+                return false;
+            }
+        }
+
+        // 初始化版本选择器
+        function initializeVersionSelector() {
+            const selector = document.getElementById('versionSelector');
+            selector.innerHTML = '';
+
+            if (!Array.isArray(officeWebsiteData.versions)) {
+                officeWebsiteData.versions = [];
+            }
+
+            // 添加所有版本选项
+            officeWebsiteData.versions.forEach(version => {
+                const option = document.createElement('option');
+                option.value = version.id;
+                option.textContent = version.name;
+                if (version.id === officeWebsiteData.officeCurrentVersionId) {
+                    option.selected = true;
+                }
+                selector.appendChild(option);
+            });
+
+            // 添加版本切换事件
+            selector.onchange = async () => {
+                try {
+                    const versionId = selector.value;
+                    if (!versionId) {
+                        throw new Error('版本ID无效');
+                    }
+
+                    await switchVersion(versionId);
+                } catch (error) {
+                    console.error('切换版本失败:', error);
+                    showToast('errorToast', '切换版本失败: ' + error.message);
+                    // 恢复选择器的选中状态
+                    selector.value = officeWebsiteData.officeCurrentVersionId;
+                }
+            };
+
+            // 更新版本创建模态框中的来源选择
+            const sourceSelect = document.getElementById('sourceVersionSelect');
+            sourceSelect.innerHTML = '';
+
+            officeWebsiteData.versions.forEach(version => {
+                const option = document.createElement('option');
+                option.value = version.id;
+                option.textContent = version.name;
+                sourceSelect.appendChild(option);
+            });
+
+            // 默认选择当前版本作为复制来源
+            sourceSelect.value = officeWebsiteData.officeCurrentVersionId;
+        }
+
+        // 获取当前版本（添加安全检查）
+        function getCurrentVersion() {
+            if (!Array.isArray(officeWebsiteData.versions) || !officeWebsiteData.officeCurrentVersionId) {
+                return null;
+            }
+            return officeWebsiteData.versions.find(v => v.id === officeWebsiteData.officeCurrentVersionId) || null;
+        }
+
+        // 切换版本
+        async function switchVersion(versionId) {
+            try {
+                if (!versionId) {
+                    throw new Error('版本ID不能为空');
+                }
+
+                // 显示加载状态
+                document.getElementById('loadingIndicator').classList.remove('hidden');
+                document.getElementById('mainContent').classList.add('hidden');
+                document.getElementById('noDataIndicator').classList.add('hidden');
+
+                // 先更新本地状态，防止用户多次点击
+                const oldVersionId = officeWebsiteData.officeCurrentVersionId;
+                officeWebsiteData.officeCurrentVersionId = versionId;
+                initializeVersionSelector(); // 立即更新选择器显示
+
+                // 发送切换版本请求到服务器
+                const response = await fetch(`${API_BASE_URL}/switch_version/${versionId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({})
+                });
+
+                if (!response.ok) {
+                    // 服务器切换失败，恢复旧版本ID
+                    officeWebsiteData.officeCurrentVersionId = oldVersionId;
+                    initializeVersionSelector();
+
+                    const error = await response.json().catch(() => null);
+                    throw new Error(error?.message || `切换版本失败 (${response.status})`);
+                }
+
+                // 重新加载所有数据
+                const loadSuccess = await loadData();
+                if (!loadSuccess) {
+                    // 加载数据失败，恢复旧版本ID
+                    officeWebsiteData.officeCurrentVersionId = oldVersionId;
+                    initializeVersionSelector();
+                    throw new Error('切换版本后加载数据失败');
+                }
+
+                // 更新当前版本并重新渲染
+                officeCurrentVersion = getCurrentVersion();
+
+                // 强制刷新搜索框和内容
+                const searchInput = document.getElementById('searchInput');
+                renderUrls(searchInput ? searchInput.value : '');
+
+                // 根据数据情况显示相应内容
+                if (officeCurrentVersion && officeCurrentVersion.urls && officeCurrentVersion.urls.length > 0) {
+                    showMainContent();
+                    showToast('operationSuccessToast', `已切换到版本: ${officeCurrentVersion.name}`);
+                } else {
+                    showNoData();
+                }
+            } catch (error) {
+                console.error('切换版本失败:', error);
+                showToast('errorToast', '切换版本失败: ' + error.message);
+            } finally {
+                document.getElementById('loadingIndicator').classList.add('hidden');
+            }
+        }
+
+        // 创建新版本
+        async function createVersion(name, sourceVersionId) {
+    try {
+        // 基础参数验证
+        if (!name || name.trim() === '') {
+            throw new Error('版本名称不能为空');
+        }
+        if (!sourceVersionId || sourceVersionId.trim() === '') {
+            throw new Error('来源版本ID不能为空');
+        }
+
+        // 查找源版本
+        const sourceVersion = officeWebsiteData.versions.find(v => v.id === sourceVersionId);
+        if (!sourceVersion) {
+            throw new Error(`未找到ID为${sourceVersionId}的源版本`);
+        }
+
+        // 验证源版本的分类顺序数据
+        let sourceCategoryOrder = [];
+        if (Array.isArray(sourceVersion.categoryOrder)) {
+            // 过滤掉无效的分类名称
+            sourceCategoryOrder = sourceVersion.categoryOrder.filter(cat =>
+                typeof cat === 'string' && cat.trim() !== ''
+            );
+        } else {
+            console.warn('源版本的categoryOrder不是数组，将使用空数组');
+        }
+
+        // 如果源版本没有分类顺序，从实际网址数据中生成
+        if (sourceCategoryOrder.length === 0 && sourceVersion.urls && sourceVersion.urls.length > 0) {
+            console.log('源版本没有分类顺序，从网址数据中生成');
+            const categoriesSet = new Set();
+            sourceVersion.urls.forEach(url => {
+                if (url.category && url.category.trim() !== '') {
+                    categoriesSet.add(url.category);
+                }
+            });
+            sourceCategoryOrder = Array.from(categoriesSet);
+        }
+
+        // 发送创建请求，包含完整的分类顺序
+        const response = await fetch(`${API_BASE_URL}/create_version`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: name.trim(),
+                sourceId: sourceVersionId,
+                categoryOrder: sourceCategoryOrder
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => null);
+            throw new Error(error?.message || `创建版本失败 (HTTP状态码: ${response.status})`);
+        }
+
+        // 获取新创建的版本数据
+        const newVersion = await response.json();
+
+        // 验证服务器返回的新版本是否包含正确的分类顺序
+        if (!newVersion || !newVersion.id) {
+            throw new Error('服务器返回的新版本数据不完整');
+        }
+        if (!Array.isArray(newVersion.categoryOrder)) {
+            console.warn('服务器返回的新版本没有有效的categoryOrder，将进行修复');
+        } else if (JSON.stringify(newVersion.categoryOrder) !== JSON.stringify(sourceCategoryOrder)) {
+            console.warn('服务器返回的分类顺序与发送的不一致', {
+                sent: sourceCategoryOrder,
+                received: newVersion.categoryOrder
+            });
+        }
+
+        // 重新加载所有数据，确保获取最新状态
+        await loadData();
+
+        // 再次验证数据是否已正确保存
+        const reloadedVersion = officeWebsiteData.versions.find(v => v.id === newVersion.id);
+        if (!reloadedVersion) {
+            throw new Error('重新加载后未找到新创建的版本');
+        }
+
+        // 自动切换到新创建的版本
+        await switchVersion(newVersion.id);
+
+        // 最终验证分类顺序是否正确
+        const finalVersion = getCurrentVersion();
+        if (JSON.stringify(finalVersion.categoryOrder) !== JSON.stringify(sourceCategoryOrder)) {
+            console.warn('最终版本的分类顺序与源版本不一致，尝试手动修复');
+            // 尝试手动修复
+            finalVersion.categoryOrder = sourceCategoryOrder;
+            await saveData();
+        }
+
+        showToast('operationSuccessToast', '版本创建成功并已切换到新版本，分类顺序已同步');
+        return true;
+    } catch (error) {
+        console.error('创建版本失败:', error);
+        showToast('errorToast', '创建版本失败: ' + error.message);
+        return false;
+    }
+}
+
+
+        // 切换分类折叠状态
+        async function toggleCategory(category) {
+            if (!officeCurrentVersion) {
+                showToast('errorToast', '当前版本无效');
+                return;
+            }
+
+            if (!officeCurrentVersion.collapsedCategories) {
+                officeCurrentVersion.collapsedCategories = [];
+            }
+
+            const index = officeCurrentVersion.collapsedCategories.indexOf(category);
+            if (index === -1) {
+                officeCurrentVersion.collapsedCategories.push(category);
+            } else {
+                officeCurrentVersion.collapsedCategories.splice(index, 1);
+            }
+
+            await saveData();
+            renderUrls(document.getElementById('searchInput').value);
+        }
+
+        // 重命名分类
+        async function renameCategory(oldName, newName) {
+            if (!officeCurrentVersion || !Array.isArray(officeCurrentVersion.urls)) {
+                showToast('errorToast', '当前版本数据无效');
+                return false;
+            }
+
+            if (oldName === newName) {
+                return true;
+            }
+
+            // 检查新名称是否已存在
+            const categoryExists = officeCurrentVersion.urls.some(url => url.category === newName);
+            if (categoryExists) {
+                showToast('errorToast', '该分类名称已存在');
+                return false;
+            }
+
+            try {
+                // 更新分类下所有网址的分类名称
+                officeCurrentVersion.urls.forEach(url => {
+                    if (url.category === oldName) {
+                        url.category = newName;
+                    }
+                });
+
+                // 更新折叠状态中的分类名称
+                if (officeCurrentVersion.collapsedCategories) {
+                    const index = officeCurrentVersion.collapsedCategories.indexOf(oldName);
+                    if (index !== -1) {
+                        officeCurrentVersion.collapsedCategories.splice(index, 1, newName);
+                    }
+                }
+
+                // 更新分类顺序中的名称
+                if (officeCurrentVersion.categoryOrder) {
+                    const index = officeCurrentVersion.categoryOrder.indexOf(oldName);
+                    if (index !== -1) {
+                        officeCurrentVersion.categoryOrder.splice(index, 1, newName);
+                    }
+                }
+
+                if (await saveData()) {
+                    showToast('operationSuccessToast', '分类重命名成功');
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error('重命名分类失败:', error);
+                showToast('errorToast', '重命名分类失败: ' + error.message);
+                return false;
+            }
+        }
+
+        // 删除分类及其下所有网址
+        async function deleteCategory(categoryName) {
+            if (!officeCurrentVersion || !Array.isArray(officeCurrentVersion.urls)) {
+                showToast('errorToast', '当前版本数据无效');
+                return false;
+            }
+
+            try {
+                // 过滤掉该分类下的所有网址
+                const remainingUrls = officeCurrentVersion.urls.filter(url => url.category !== categoryName);
+                officeCurrentVersion.urls = remainingUrls;
+
+                // 从折叠状态中移除该分类
+                if (officeCurrentVersion.collapsedCategories) {
+                    officeCurrentVersion.collapsedCategories = officeCurrentVersion.collapsedCategories.filter(
+                        cat => cat !== categoryName
+                    );
+                }
+
+                // 从分类顺序中移除该分类
+                if (officeCurrentVersion.categoryOrder) {
+                    officeCurrentVersion.categoryOrder = officeCurrentVersion.categoryOrder.filter(
+                        cat => cat !== categoryName
+                    );
+                }
+
+                if (await saveData()) {
+                    showToast('operationSuccessToast', '分类删除成功');
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error('删除分类失败:', error);
+                showToast('errorToast', '删除分类失败: ' + error.message);
+                return false;
+            }
+        }
+
+        // 展开所有分类
+        async function expandAllCategories() {
+            if (officeCurrentVersion) {
+                officeCurrentVersion.collapsedCategories = [];
+                await saveData();
+                renderUrls(document.getElementById('searchInput').value);
+            }
+        }
+
+        // 折叠所有分类
+        async function collapseAllCategories() {
+            if (officeCurrentVersion && officeCurrentVersion.urls && officeCurrentVersion.urls.length > 0) {
+                const categories = [...new Set(officeCurrentVersion.urls.map(url => url.category))];
+                officeCurrentVersion.collapsedCategories = categories;
+                await saveData();
+                renderUrls(document.getElementById('searchInput').value);
+            }
+        }
+
+        // 初始化数据
+        async function initializeData() {
+            try {
+                document.getElementById('loadingIndicator').classList.remove('hidden');
+                document.getElementById('mainContent').classList.add('hidden');
+                document.getElementById('noDataIndicator').classList.add('hidden');
+
+                // 先尝试获取默认版本
+                const defaultResponse = await fetch(`${API_BASE_URL}/data?version_id=default`);
+                if (defaultResponse.ok) {
+                    await loadData();
+                } else {
+                    // 如果默认版本不存在，尝试创建初始化数据
+                    await forceInitializeData();
+                }
+
+                // 设置当前版本
+                officeCurrentVersion = getCurrentVersion();
+                if (!officeCurrentVersion && officeWebsiteData.versions.length > 0) {
+                    officeCurrentVersion = officeWebsiteData.versions[0];
+                    officeWebsiteData.officeCurrentVersionId = officeCurrentVersion.id;
+                    await saveData();
+                }
+
+                // 确保当前版本有必要的属性
+                if (officeCurrentVersion) {
+                    if (!officeCurrentVersion.collapsedCategories) {
+                        officeCurrentVersion.collapsedCategories = [];
+                    }
+                    // 初始化分类顺序
+                    if (!officeCurrentVersion.categoryOrder) {
+                        const categories = [...new Set(officeCurrentVersion.urls.map(url => url.category))];
+                        officeCurrentVersion.categoryOrder = categories;
+                        await saveData();
+                    }
+                }
+
+                // 初始化版本选择器
+                initializeVersionSelector();
+
+                // 为无数据状态添加添加网址按钮事件
+                document.getElementById('addFirstUrlBtn').addEventListener('click', showAddModal);
+
+                if (officeCurrentVersion && officeCurrentVersion.urls && officeCurrentVersion.urls.length === 0) {
+                    showNoData();
+                } else if (officeCurrentVersion) {
+                    renderUrls();
+                    showMainContent();
+                } else {
+                    showNoData();
+                }
+            } catch (error) {
+                console.error('数据初始化失败:', error);
+                document.getElementById('loadingIndicator').innerHTML =
+                    `<i class="fa fa-exclamation-triangle text-yellow-500 mr-2"></i>初始化数据失败，请点击下方按钮重试`;
+                document.getElementById('loadingIndicator').classList.add('mb-4');
+
+                // 显示初始化按钮
+                const initBtn = document.createElement('button');
+                initBtn.id = 'fallbackInitBtn';
+                initBtn.className = 'bg-primary hover:bg-primary-900 text-white px-4 py-2 rounded-lg';
+                initBtn.textContent = `初始化空数据到 my_url.json`;
+                initBtn.onclick = forceInitializeData;
+
+                document.getElementById('loadingIndicator').appendChild(initBtn);
+            }
+        }
+
+        // 强制初始化数据
+        async function forceInitializeData() {
+            try {
+                // 创建默认版本数据
+                const defaultData = {
+                    versions: [
+                        {
+                            "id": "default",
+                            "name": "通用版本",
+                            "urls": [],
+                            "collapsedCategories": [],
+                            "categoryOrder": []
+                        }
+                    ],
+                    officeCurrentVersionId: "default"
+                };
+
+                // 保存初始化数据
+                const response = await fetch(`${API_BASE_URL}/data`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        version_id: "default",
+                        current_version: defaultData.versions[0]
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('初始化数据保存失败');
+                }
+
+                // 重新加载数据
+                officeWebsiteData = defaultData;
+                officeCurrentVersion = officeWebsiteData.versions[0];
+                initializeVersionSelector();
+                renderUrls();
+                showMainContent();
+            } catch (error) {
+                console.error('强制初始化失败:', error);
+                showToast('errorToast', '初始化数据失败: ' + error.message);
+            }
+        }
+
+        // 显示主内容区域
+        function showMainContent() {
+            document.getElementById('loadingIndicator').classList.add('hidden');
+            document.getElementById('noDataIndicator').classList.add('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+        }
+
+        // 显示无数据提示
+        function showNoData() {
+            document.getElementById('loadingIndicator').classList.add('hidden');
+            document.getElementById('mainContent').classList.add('hidden');
+            document.getElementById('noDataIndicator').classList.remove('hidden');
+        }
+
+        // 根据URL获取对应的图标
+        function getUrlIcon(url, name) {
+            if (url.includes('baidu') || name.includes('百度')) return 'fa fa-search';
+            if (url.includes('oa') || name.includes('OA')) return 'fa fa-building';
+            if (name.includes('招聘')) return 'fa fa-users';
+            if (name.includes('Teambition') || url.includes('pm.')) return 'fa fa-tasks';
+            if (name.includes('禅道')) return 'fa fa-bug';
+            if (name.includes('jenkins')) return 'fa fa-cogs';
+            if (url.includes('git') || url.includes('svn')) return 'fa fa-code-fork';
+            if (name.includes('仓库') || name.includes('镜像') || url.includes('maven') || url.includes('npm') || url.includes('pip')) return 'fa fa-database';
+            if (name.includes('风控')) return 'fa fa-shield';
+            if (name.includes('TA') || name.includes('ta')) return 'fa fa-exchange';
+            if (name.includes('欧拉') || url.includes('euler')) return 'fa fa-calculator';
+            if (name.includes('柜台') || url.includes('crm')) return 'fa fa-bank';
+            return 'fa fa-globe';
+        }
+
+        // 重新排序网址并保存
+        async function reorderUrls(category, newOrderIds) {
+            if (!officeCurrentVersion || !Array.isArray(officeCurrentVersion.urls)) {
+                showToast('errorToast', '当前版本数据无效');
+                return false;
+            }
+
+            try {
+                // 筛选出该分类的网址
+                const categoryUrls = officeCurrentVersion.urls.filter(url => url.category === category);
+                // 其他分类的网址保持不变
+                const otherUrls = officeCurrentVersion.urls.filter(url => url.category !== category);
+
+                // 按照新的顺序重新排列
+                const reorderedUrls = newOrderIds.map(id =>
+                    categoryUrls.find(url => url.id === parseInt(id))
+                ).filter(Boolean); // 过滤掉可能的null值
+
+                // 合并并更新网址列表
+                officeCurrentVersion.urls = [...otherUrls, ...reorderedUrls];
+
+                // 保存更改
+                if (await saveData()) {
+                    showToast('operationSuccessToast', '排序已更新');
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error('重新排序失败:', error);
+                showToast('errorToast', '排序更新失败: ' + error.message);
+                return false;
+            }
+        }
+
+        // 重新排序分类并保存
+        async function reorderCategories(newOrder) {
+            if (!officeCurrentVersion) {
+                showToast('errorToast', '当前版本数据无效');
+                return false;
+            }
+
+            try {
+                // 更新分类顺序
+                officeCurrentVersion.categoryOrder = newOrder;
+
+                // 保存更改
+                if (await saveData()) {
+                    showToast('operationSuccessToast', '分类排序已更新');
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                console.error('分类重新排序失败:', error);
+                showToast('errorToast', '分类排序更新失败: ' + error.message);
+                return false;
+            }
+        }
+
+        // 初始化拖拽排序事件
+        function initDragAndDrop() {
+            const urlContainer = document.getElementById('urlContainer');
+
+            // 监听所有卡片的拖拽开始事件
+            urlContainer.addEventListener('dragstart', (e) => {
+                // 分类拖拽
+                if (e.target.closest('[data-category]')) {
+                    const categoryElement = e.target.closest('[data-category]');
+                    if (e.target.closest('.category-header') || e.target.closest('.category-drag-handle')) {
+                        draggedCategory = categoryElement;
+                        isDraggingCategory = true;
+
+                        // 记录被拖拽分类的名称
+                        e.dataTransfer.setData('text/plain', categoryElement.dataset.category);
+
+                        // 延迟添加类以避免拖动开始时的视觉闪烁
+                        setTimeout(() => {
+                            categoryElement.classList.add('dragging');
+                        }, 0);
+                        return;
+                    }
+                }
+
+                // 网址卡片拖拽
+                if (e.target.closest('.url-card')) {
+                    draggedItem = e.target.closest('.url-card');
+                    draggedCategory = draggedItem.closest('[data-category]').dataset.category;
+                    isDraggingCategory = false;
+
+                    // 记录被拖拽元素的ID
+                    e.dataTransfer.setData('text/plain', draggedItem.querySelector('.edit-url').dataset.id);
+
+                    // 延迟添加类以避免拖动开始时的视觉闪烁
+                    setTimeout(() => {
+                        draggedItem.classList.add('dragging');
+                    }, 0);
+                }
+            });
+
+// 监听拖拽结束事件
+urlContainer.addEventListener('dragend', (e) => {
+    // 处理分类拖拽结束
+    if (isDraggingCategory && draggedCategory) {
+        draggedCategory.classList.remove('dragging');
+
+        // 获取所有分类的新顺序
+        const categoryElements = Array.from(urlContainer.querySelectorAll('[data-category]'));
+        const categoryOrder = categoryElements.map(el => el.dataset.category);
+
+        // 保存分类新顺序
+        reorderCategories(categoryOrder);
+
+        draggedCategory = null;
+        isDraggingCategory = false;
+    }
+    // 处理网址卡片拖拽结束
+    else if (draggedItem) {
+        draggedItem.classList.remove('dragging');
+
+        // 获取当前分类的所有网址ID，包括被拖拽的元素
+        const categoryElement = urlContainer.querySelector(`[data-category="${draggedCategory}"]`);
+        if (categoryElement) {
+            // 直接从DOM顺序获取所有ID，包括被拖拽的元素
+            const allCards = Array.from(categoryElement.querySelectorAll('.url-card'));
+            const urlIds = allCards.map(card =>
+                card.querySelector('.edit-url')?.dataset.id
+            ).filter(Boolean); // 过滤无效ID
+
+            // 保存新的排序
+            reorderUrls(draggedCategory, urlIds);
+        }
+
+        draggedItem = null;
+        draggedCategory = null;
+    }
+
+    // 清除所有拖放提示样式
+    document.querySelectorAll('.url-card, [data-category]').forEach(el => {
+        el.classList.remove('drag-over', 'category-drag-over');
+    });
+});
+
+
+            // 监听拖放区域的dragover事件
+            urlContainer.addEventListener('dragover', (e) => {
+                e.preventDefault(); // 允许放置
+
+                // 分类拖拽处理
+                if (isDraggingCategory && draggedCategory) {
+                    const dragTarget = e.target.closest('[data-category]:not(.dragging)');
+                    if (dragTarget) {
+                        // 清除其他元素的提示样式
+                        document.querySelectorAll('[data-category]').forEach(el => {
+                            el.classList.remove('category-drag-over');
+                        });
+
+                        // 添加拖放提示样式
+                        dragTarget.classList.add('category-drag-over');
+
+                        // 计算放置位置
+                        const rect = dragTarget.getBoundingClientRect();
+                        const offset = e.clientX - rect.left;
+
+                        // 根据鼠标位置决定是放在目标左边还是右边
+                        if (offset < rect.width / 2) {
+                            urlContainer.insertBefore(draggedCategory, dragTarget);
+                        } else {
+                            urlContainer.insertBefore(draggedCategory, dragTarget.nextSibling);
+                        }
+                    }
+                }
+                // 网址卡片拖拽处理
+                else if (draggedItem) {
+                    const dragTarget = e.target.closest('.url-card:not(.dragging)');
+                    if (dragTarget) {
+                        // 只允许在同一分类内拖拽
+                        const targetCategory = dragTarget.closest('[data-category]').dataset.category;
+                        if (targetCategory === draggedCategory) {
+                            // 添加拖放提示样式
+                            document.querySelectorAll('.url-card').forEach(card => {
+                                card.classList.remove('drag-over');
+                            });
+                            dragTarget.classList.add('drag-over');
+
+                            // 计算放置位置
+                            const rect = dragTarget.getBoundingClientRect();
+                            const offset = e.clientY - rect.top;
+
+                            // 根据鼠标位置决定是放在目标上方还是下方
+                            if (offset < rect.height / 2) {
+                                dragTarget.parentNode.insertBefore(draggedItem, dragTarget);
+                            } else {
+                                dragTarget.parentNode.insertBefore(draggedItem, dragTarget.nextSibling);
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 监听dragleave事件，移除拖放提示样式
+            urlContainer.addEventListener('dragleave', (e) => {
+                if (isDraggingCategory) {
+                    const leaveTarget = e.target.closest('[data-category]');
+                    if (leaveTarget && !leaveTarget.classList.contains('dragging')) {
+                        leaveTarget.classList.remove('category-drag-over');
+                    }
+                } else {
+                    const leaveTarget = e.target.closest('.url-card');
+                    if (leaveTarget && !leaveTarget.classList.contains('dragging')) {
+                        leaveTarget.classList.remove('drag-over');
+                    }
+                }
+            });
+        }
+
+        // 渲染所有网址
+        function renderUrls(searchQuery = '') {
+            const container = document.getElementById('urlContainer');
+            container.innerHTML = '';
+
+            // 确保当前版本和网址列表有效
+            if (!officeCurrentVersion || !Array.isArray(officeCurrentVersion.urls)) {
+                showNoData();
+                return;
+            }
+
+            // 如果没有数据
+            if (officeCurrentVersion.urls.length === 0) {
+                showNoData();
+                return;
+            }
+
+            // 过滤搜索结果
+            let filteredUrls = officeCurrentVersion.urls;
+            if (searchQuery) {
+                const query = searchQuery.toLowerCase();
+                filteredUrls = officeCurrentVersion.urls.filter(url =>
+                    url.name.toLowerCase().includes(query) ||
+                    url.url.toLowerCase().includes(query) ||
+                    (url.notes && url.notes.toLowerCase().includes(query)) ||
+                    url.category.toLowerCase().includes(query)
+                );
+            }
+
+            // 如果搜索无结果
+            if (filteredUrls.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <i class="fa fa-search text-gray-300 text-5xl mb-4"></i>
+                        <p class="text-gray-500">没有找到与"${searchQuery}"匹配的网址</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // 按分类分组
+            const groupedUrls = {};
+            filteredUrls.forEach(url => {
+                if (!groupedUrls[url.category]) {
+                    groupedUrls[url.category] = [];
+                }
+                groupedUrls[url.category].push(url);
+            });
+
+            // 获取分类顺序，如果没有则创建一个
+            let categoryOrder = officeCurrentVersion.categoryOrder || [];
+            // 获取所有分类并确保新分类添加到末尾
+            const allCategories = Object.keys(groupedUrls);
+            allCategories.forEach(category => {
+                if (!categoryOrder.includes(category)) {
+                    categoryOrder.push(category);
+                }
+            });
+            // 保存更新后的分类顺序
+            if (!officeCurrentVersion.categoryOrder || JSON.stringify(officeCurrentVersion.categoryOrder) !== JSON.stringify(categoryOrder)) {
+                officeCurrentVersion.categoryOrder = categoryOrder;
+                saveData(); // 异步保存，不等待结果
+            }
+
+            // 按顺序渲染每个分类
+            categoryOrder.forEach(category => {
+                if (!groupedUrls[category]) return; // 跳过没有数据的分类
+
+                // 检查分类是否应该折叠
+                const isCollapsed = officeCurrentVersion.collapsedCategories &&
+                                   officeCurrentVersion.collapsedCategories.includes(category);
+
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = `bg-white rounded-xl card-shadow ${isCollapsed ? 'category-collapsed' : ''}`;
+                categoryDiv.dataset.category = category;
+                categoryDiv.draggable = true; // 允许分类拖拽
+
+                // 分类标题
+                const categoryHeader = document.createElement('div');
+                categoryHeader.className = 'p-5 cursor-pointer flex justify-between items-center category-header';
+                categoryHeader.addEventListener('click', (e) => {
+                    if (!e.target.closest('.category-actions') && !e.target.closest('.category-drag-handle')) {
+                        toggleCategory(category);
+                    }
+                });
+
+                categoryHeader.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fa fa-bars category-drag-handle text-gray-400"></i>
+                        <i class="fa fa-chevron-right rotate-icon text-primary mr-2"></i>
+                        <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                            <i class="fa fa-folder text-primary mr-2"></i>${category}
+                            <span class="text-sm font-normal text-gray-500 ml-2">(${groupedUrls[category].length})</span>
+                        </h2>
+                    </div>
+                    <div class="category-actions">
+                        <button class="rename-btn category-action-btn text-gray-500" data-category="${category}" title="重命名分类">
+                            <i class="fa fa-pen text-xs"></i>
+                        </button>
+                        <button class="delete-category-btn category-action-btn text-gray-500" data-category="${category}" title="删除分类">
+                            <i class="fa fa-trash text-xs"></i>
+                        </button>
+                        <button class="text-gray-400 hover:text-primary transition-colors">
+                            <i class="fa ${isCollapsed ? 'fa-plus' : 'fa-minus'}"></i>
+                        </button>
+                    </div>
+                `;
+                categoryDiv.appendChild(categoryHeader);
+
+                // 网址列表
+                const categoryContent = document.createElement('div');
+                categoryContent.className = 'category-content px-5';
+
+                const urlsList = document.createElement('div');
+                urlsList.className = 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3';
+                categoryContent.appendChild(urlsList);
+
+                // 渲染每个网址，添加拖拽属性
+                groupedUrls[category].forEach(url => {
+                    const urlCard = document.createElement('div');
+                    urlCard.className = 'bg-gray-50 rounded-lg p-3 hover-lift url-card fixed-size-card';
+                    urlCard.draggable = true; // 允许拖拽
+                    urlCard.dataset.urlId = url.id;
+
+                    urlCard.innerHTML = `
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1 content-container">
+                                <div class="flex items-start">
+                                    <i class="fa fa-bars drag-handle mr-1.5 text-gray-400"></i>
+                                    <i class="${getUrlIcon(url.url, url.name)} text-primary mr-2 mt-0.5"></i>
+                                    <div class="flex-1 min-w-0">
+                                        <h3 class="font-medium text-gray-800 text-sm truncate-text">${url.name}</h3>
+                                        <a href="${url.url}" target="_blank" class="text-primary hover:text-primary/80 text-xs mt-1 block truncate-text" title="${url.url}">${url.url}</a>
+                                        ${url.notes ? `<p class="text-gray-500 text-xs mt-1 bg-gray-100 p-1.5 rounded truncate-text">${url.notes}</p>` : ''}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex space-x-1 ml-2 url-actions">
+                                <button class="copy-url p-1.5 hover:bg-gray-200 rounded text-gray-500" data-url="${url.url}" title="复制链接">
+                                    <i class="fa fa-copy text-xs"></i>
+                                </button>
+                                <button class="edit-url p-1.5 hover:bg-gray-200 rounded text-gray-500" data-id="${url.id}" title="编辑">
+                                    <i class="fa fa-pen text-xs"></i>
+                                </button>
+                                <button class="delete-url p-1.5 hover:bg-gray-200 rounded text-gray-500" data-id="${url.id}" title="删除">
+                                    <i class="fa fa-trash text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                    urlsList.appendChild(urlCard);
+                });
+
+                categoryDiv.appendChild(categoryContent);
+                container.appendChild(categoryDiv);
+            });
+
+            // 添加事件监听器
+            addEventListeners();
+            // 初始化拖拽排序
+            initDragAndDrop();
+        }
+
+        // 添加事件监听器
+        function addEventListeners() {
+            // 使用事件委托处理分类操作按钮
+            document.getElementById('urlContainer').addEventListener('click', function(e) {
+                // 处理复制按钮点击
+                if (e.target.closest('.copy-url')) {
+                    e.stopPropagation();
+                    const btn = e.target.closest('.copy-url');
+                    const url = btn.getAttribute('data-url');
+
+                    if (url) {
+                        copyToClipboard(url);
+                    } else {
+                        showToast('errorToast', '未找到有效的URL');
+                    }
+                }
+
+                // 处理编辑按钮点击
+                if (e.target.closest('.edit-url')) {
+                    e.stopPropagation();
+                    const btn = e.target.closest('.edit-url');
+                    const id = parseInt(btn.getAttribute('data-id'));
+                    editUrl(id);
+                }
+
+                // 处理删除按钮点击
+                if (e.target.closest('.delete-url')) {
+                    e.stopPropagation();
+                    const btn = e.target.closest('.delete-url');
+                    const id = parseInt(btn.getAttribute('data-id'));
+                    showDeleteConfirm(id);
+                }
+
+                // 处理分类重命名按钮点击
+                if (e.target.closest('.rename-btn')) {
+                    e.stopPropagation();
+                    const btn = e.target.closest('.rename-btn');
+                    const category = btn.getAttribute('data-category');
+                    showRenameCategoryModal(category);
+                }
+
+                // 处理分类删除按钮点击
+                if (e.target.closest('.delete-category-btn')) {
+                    e.stopPropagation();
+                    const btn = e.target.closest('.delete-category-btn');
+                    const category = btn.getAttribute('data-category');
+                    showDeleteCategoryConfirm(category);
+                }
+            });
+        }
+
+        // 显示重命名分类模态框
+        function showRenameCategoryModal(category) {
+            document.getElementById('renameCategoryId').value = category;
+            document.getElementById('newCategoryName').value = category;
+
+            const modal = document.getElementById('renameCategoryModal');
+            const modalContent = document.getElementById('renameCategoryModalContent');
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+
+            setTimeout(() => {
+                document.getElementById('newCategoryName').focus();
+            }, 150);
+        }
+
+        // 关闭重命名分类模态框
+        function closeRenameCategoryModal() {
+            const modal = document.getElementById('renameCategoryModal');
+            const modalContent = document.getElementById('renameCategoryModalContent');
+
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // 提交分类重命名表单
+        async function submitRenameCategoryForm(e) {
+            e.preventDefault();
+
+            const oldCategoryName = document.getElementById('renameCategoryId').value;
+            const newCategoryName = document.getElementById('newCategoryName').value.trim();
+
+            if (!newCategoryName) {
+                showToast('errorToast', '分类名称不能为空');
+                return;
+            }
+
+            if (await renameCategory(oldCategoryName, newCategoryName)) {
+                closeRenameCategoryModal();
+                const searchInput = document.getElementById('searchInput');
+                renderUrls(searchInput ? searchInput.value : '');
+            }
+        }
+
+        // 显示删除分类确认
+        function showDeleteCategoryConfirm(category) {
+            document.getElementById('deleteCategoryName').value = category;
+            document.getElementById('deleteCategoryMessage').textContent =
+                `您确定要删除分类"${category}"及其下所有网址吗？此操作无法撤销。`;
+            document.getElementById('deleteCategoryModal').classList.remove('hidden');
+        }
+
+        // 关闭删除分类确认
+        function closeDeleteCategoryConfirm() {
+            document.getElementById('deleteCategoryModal').classList.add('hidden');
+        }
+
+        // 确认删除分类
+        async function confirmDeleteCategory() {
+            const category = document.getElementById('deleteCategoryName').value;
+
+            if (await deleteCategory(category)) {
+                closeDeleteCategoryConfirm();
+                const searchInput = document.getElementById('searchInput');
+                renderUrls(searchInput ? searchInput.value : '');
+
+                initializeVersionSelector();
+
+                if (officeCurrentVersion && officeCurrentVersion.urls && officeCurrentVersion.urls.length === 0) {
+                    showNoData();
+                }
+            }
+        }
+
+        // 显示添加网址模态框
+        function showAddModal() {
+            document.getElementById('modalTitle').textContent = '添加新网址';
+            document.getElementById('urlForm').reset();
+            document.getElementById('urlId').value = '';
+
+            const modal = document.getElementById('urlModal');
+            const modalContent = document.getElementById('modalContent');
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        // 编辑网址
+        function editUrl(id) {
+            if (!officeCurrentVersion || !Array.isArray(officeCurrentVersion.urls)) {
+                showToast('errorToast', '数据加载错误，无法编辑');
+                return;
+            }
+
+            const url = officeCurrentVersion.urls.find(item => item.id === id);
+            if (!url) {
+                showToast('errorToast', '未找到该网址');
+                return;
+            }
+
+            document.getElementById('modalTitle').textContent = '编辑网址';
+            document.getElementById('urlId').value = url.id;
+            document.getElementById('urlName').value = url.name;
+            document.getElementById('urlAddress').value = url.url;
+            document.getElementById('urlCategory').value = url.category;
+            document.getElementById('urlNotes').value = url.notes || '';
+
+            const modal = document.getElementById('urlModal');
+            const modalContent = document.getElementById('modalContent');
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        // 关闭模态框
+        function closeModal() {
+            const modal = document.getElementById('urlModal');
+            const modalContent = document.getElementById('modalContent');
+
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // 显示删除确认
+        function showDeleteConfirm(id) {
+            document.getElementById('deleteUrlId').value = id;
+            document.getElementById('deleteModal').classList.remove('hidden');
+        }
+
+        // 关闭删除确认
+        function closeDeleteConfirm() {
+            document.getElementById('deleteModal').classList.add('hidden');
+        }
+
+        // 确认删除
+        async function confirmDelete() {
+            const id = parseInt(document.getElementById('deleteUrlId').value);
+            const versionId = getCurrentVersionId();
+            // 记录当前版本是否为最后一个网址
+            const isLastUrl = officeCurrentVersion && officeCurrentVersion.urls &&
+                             officeCurrentVersion.urls.length === 1 &&
+                             officeCurrentVersion.urls[0].id === id;
+
+            try {
+                if (isNaN(id) || !versionId) {
+                    throw new Error('无效的网址ID或版本ID');
+                }
+
+                document.getElementById('loadingIndicator').classList.remove('hidden');
+                document.getElementById('mainContent').classList.add('hidden');
+                document.getElementById('noDataIndicator').classList.add('hidden');
+
+                const response = await fetch(`${API_BASE_URL}/urls/${id}?version_id=${encodeURIComponent(versionId)}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    const error = await response.json().catch(() => null);
+                    throw new Error(error?.message || `删除失败 (${response.status})`);
+                }
+
+                // 重新加载数据
+                await loadData();
+                officeCurrentVersion = getCurrentVersion();
+
+                // 检查当前版本是否已被删除（即不在版本列表中）
+                const currentVersionExists = officeWebsiteData.versions.some(
+                    v => v.id === officeWebsiteData.officeCurrentVersionId
+                );
+                initializeVersionSelector();
+
+                // 如果当前版本已被删除，自动切换到默认版本
+                if (!currentVersionExists) {
+                    await switchVersion('default');
+                    showToast('operationSuccessToast', '当前版本已空，已自动切换到通用版本');
+                } else {
+                    // 正常渲染
+                    const searchInput = document.getElementById('searchInput');
+                    renderUrls(searchInput ? searchInput.value : '');
+
+                    if (officeCurrentVersion && officeCurrentVersion.urls && officeCurrentVersion.urls.length > 0) {
+                        showMainContent();
+                    } else {
+                        showNoData();
+                    }
+
+                    closeDeleteConfirm();
+                    showToast('operationSuccessToast', '删除成功');
+                }
+            } catch (error) {
+                console.error('删除失败:', error);
+                showToast('errorToast', '删除失败: ' + error.message);
+                showMainContent();
+            } finally {
+                document.getElementById('loadingIndicator').classList.add('hidden');
+            }
+        }
+
+        // 保存网址
+        async function saveUrl(e) {
+            e.preventDefault();
+
+            const id = document.getElementById('urlId').value;
+            const name = document.getElementById('urlName').value;
+            const url = document.getElementById('urlAddress').value;
+            const category = document.getElementById('urlCategory').value;
+            const notes = document.getElementById('urlNotes').value;
+            const versionId = getCurrentVersionId();
+
+            if (!name || !url || !category) {
+                showToast('errorToast', '请填写所有必填字段');
+                return;
+            }
+
+            if (!versionId) {
+                showToast('errorToast', '未选择有效版本');
+                return;
+            }
+
+            const urlData = {
+                name,
+                url,
+                category,
+                notes,
+                version_id: versionId
+            };
+
+            try {
+                document.getElementById('loadingIndicator').classList.remove('hidden');
+                document.getElementById('mainContent').classList.add('hidden');
+                document.getElementById('noDataIndicator').classList.add('hidden');
+
+                if (id) {
+                    // 更新现有网址
+                    const response = await fetch(`${API_BASE_URL}/urls/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({...urlData, id: parseInt(id)})
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json().catch(() => null);
+                        throw new Error(error?.message || `更新失败 (${response.status})`);
+                    }
+                } else {
+                    // 添加新网址
+                    const response = await fetch(`${API_BASE_URL}/urls`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(urlData)
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json().catch(() => null);
+                        throw new Error(error?.message || `添加失败 (${response.status})`);
+                    }
+                }
+
+                await loadData();
+                officeCurrentVersion = getCurrentVersion();
+
+                const searchInput = document.getElementById('searchInput');
+                renderUrls(searchInput ? searchInput.value : '');
+
+                if (officeCurrentVersion && officeCurrentVersion.urls && officeCurrentVersion.urls.length > 0) {
+                    showMainContent();
+                } else {
+                    showNoData();
+                }
+
+                closeModal();
+                showToast('operationSuccessToast', id ? '更新成功' : '添加成功');
+            } catch (error) {
+                console.error('保存失败:', error);
+                showToast('errorToast', '保存失败: ' + error.message);
+                showMainContent();
+            } finally {
+                document.getElementById('loadingIndicator').classList.add('hidden');
+            }
+        }
+
+        // 显示版本创建模态框
+        function showVersionModal() {
+            document.getElementById('versionForm').reset();
+            document.getElementById('sourceVersionSelect').value = officeWebsiteData.officeCurrentVersionId;
+
+            const modal = document.getElementById('versionModal');
+            const modalContent = document.getElementById('versionModalContent');
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 10);
+        }
+
+        // 关闭版本创建模态框
+        function closeVersionModal() {
+            const modal = document.getElementById('versionModal');
+            const modalContent = document.getElementById('versionModalContent');
+
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // 提交版本创建表单
+        async function submitVersionForm(e) {
+            e.preventDefault();
+
+            const versionName = document.getElementById('versionName').value.trim();
+            const sourceVersionId = document.getElementById('sourceVersionSelect').value;
+
+            if (!versionName) {
+                showToast('errorToast', '请输入版本名称');
+                return;
+            }
+
+            if (!sourceVersionId) {
+                showToast('errorToast', '请选择复制来源版本');
+                return;
+            }
+
+            if (await createVersion(versionName, sourceVersionId)) {
+                closeVersionModal();
+            }
+        }
+
+        // 回到顶部功能
+        function initBackToTop() {
+            const backToTopBtn = document.getElementById('backToTop');
+
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 300) {
+                    backToTopBtn.classList.add('visible');
+                } else {
+                    backToTopBtn.classList.remove('visible');
+                }
+            });
+
+            backToTopBtn.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeData();
+            initBackToTop();
+
+            // 添加网址按钮点击事件
+            document.getElementById('addUrlBtn').addEventListener('click', showAddModal);
+
+            // 折叠/展开所有分类按钮
+            document.getElementById('expandAllBtn').addEventListener('click', expandAllCategories);
+            document.getElementById('collapseAllBtn').addEventListener('click', collapseAllCategories);
+
+            // 版本管理事件
+            document.getElementById('createVersionBtn').addEventListener('click', showVersionModal);
+            document.getElementById('closeVersionModal').addEventListener('click', closeVersionModal);
+            document.getElementById('cancelVersionBtn').addEventListener('click', closeVersionModal);
+            document.getElementById('versionForm').addEventListener('submit', submitVersionForm);
+
+            // 分类重命名事件
+            document.getElementById('closeRenameCategoryModal').addEventListener('click', closeRenameCategoryModal);
+            document.getElementById('cancelRenameCategoryBtn').addEventListener('click', closeRenameCategoryModal);
+            document.getElementById('renameCategoryForm').addEventListener('submit', submitRenameCategoryForm);
+
+            // 分类删除事件
+            document.getElementById('cancelDeleteCategoryBtn').addEventListener('click', closeDeleteCategoryConfirm);
+            document.getElementById('confirmDeleteCategoryBtn').addEventListener('click', confirmDeleteCategory);
+
+            // 关闭模态框按钮点击事件
+            document.getElementById('closeModal').addEventListener('click', closeModal);
+            document.getElementById('cancelBtn').addEventListener('click', closeModal);
+
+            // 表单提交事件
+            document.getElementById('urlForm').addEventListener('submit', saveUrl);
+
+            // 删除确认事件
+            document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteConfirm);
+            document.getElementById('confirmDeleteBtn').addEventListener('click', confirmDelete);
+
+            // 搜索框输入事件
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                renderUrls(e.target.value);
+            });
+
+            // 点击模态框外部关闭模态框
+            document.getElementById('urlModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('urlModal')) {
+                    closeModal();
+                }
+            });
+
+            document.getElementById('deleteModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('deleteModal')) {
+                    closeDeleteConfirm();
+                }
+            });
+
+            document.getElementById('versionModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('versionModal')) {
+                    closeVersionModal();
+                }
+            });
+
+            document.getElementById('renameCategoryModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('renameCategoryModal')) {
+                    closeRenameCategoryModal();
+                }
+            });
+
+            document.getElementById('deleteCategoryModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('deleteCategoryModal')) {
+                    closeDeleteCategoryConfirm();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

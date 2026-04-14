@@ -1,0 +1,55 @@
+{
+  "versions": [
+    {
+      "categoryOrder": [
+        "常用网址",
+        "搜索",
+        "镜像仓库",
+        "AI"
+      ],
+      "collapsedCategories": [
+        "常用网址",
+        "镜像仓库",
+        "AI",
+        "搜索"
+      ],
+      "id": "default",
+      "name": "通用版本",
+      "urls": [
+        {
+          "category": "常用网址",
+          "id": 61,
+          "name": "qoder",
+          "notes": "",
+          "url": "https://qoder.com/",
+          "version_id": "default"
+        },
+        {
+          "category": "镜像仓库",
+          "id": 62,
+          "name": "github",
+          "notes": "",
+          "url": "https://github.com/",
+          "version_id": "default"
+        },
+        {
+          "category": "AI",
+          "id": 63,
+          "name": "豆包",
+          "notes": "",
+          "url": "https://www.doubao.com/",
+          "version_id": "default"
+        },
+        {
+          "category": "搜索",
+          "id": 64,
+          "name": "baidu",
+          "notes": "",
+          "url": "https://www.baidu.com/",
+          "version_id": "default"
+        }
+      ]
+    }
+  ],
+  "officeCurrentVersionId": "default"
+}

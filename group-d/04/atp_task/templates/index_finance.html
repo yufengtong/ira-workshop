@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>测试管理平台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            // 品牌主色 - 南方基金风格
+            'brand-red': '#E72521',
+            'brand-red-hover': '#D41F1B',
+            'brand-blue': '#004098',
+            'brand-blue-hover': '#003380',
+            'dark-blue': '#0B264A',
+            // 中性色
+            'neutral-white': '#FFFFFF',
+            'neutral-title': '#333333',
+            'neutral-text': '#222222',
+            'neutral-muted': '#888888',
+            'neutral-bg': '#EFF4F9',
+            'neutral-light-blue': '#E5F8FD',
+          },
+          fontFamily: {
+            sans: ['-apple-system', 'system-ui', 'Segoe UI', 'Roboto', 'Ubuntu', 'Cantarell', 'Noto Sans', 'sans-serif', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', 'Helvetica', 'Arial'],
+          },
+          spacing: {
+            'page': '131.67px',
+            'section': '60px',
+            'module': '40px',
+          }
+        },
+      }
+    }
+  </script>
+
+  <style>
+    /* 系统字体栈 */
+    body {
+      font-family: -apple-system, "system-ui", "Segoe UI", system-ui, Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial;
+      color: #222222;
+      line-height: 1.6;
+    }
+
+    /* 标题样式 */
+    h1 { font-size: 28px; font-weight: 500; color: #333333; }
+    h2 { font-size: 24px; font-weight: 500; color: #333333; }
+    h3 { font-size: 20px; font-weight: 500; color: #333333; }
+
+    /* 主要按钮 - 品牌红 */
+    .btn-primary {
+      background-color: #E72521;
+      color: #FFFFFF;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 400;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-primary:hover { background-color: #D41F1B; }
+
+    /* 次要按钮 - 企业蓝 */
+    .btn-secondary {
+      background-color: #004098;
+      color: #FFFFFF;
+      border-radius: 8px;
+      padding: 12px 24px;
+      font-size: 16px;
+      font-weight: 400;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-secondary:hover { background-color: #003380; }
+
+    /* 文本链接 */
+    .link-text {
+      color: #004098;
+      text-decoration: none;
+      font-size: 14px;
+      transition: text-decoration 0.2s ease;
+    }
+
+    .link-text:hover { text-decoration: underline; }
+
+    /* 导航项 */
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 20px;
+      color: #333333;
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .nav-item:hover {
+      background-color: #EFF4F9;
+      color: #004098;
+    }
+
+    .nav-item.active {
+      background-color: #E5F8FD;
+      color: #004098;
+      border-left-color: #004098;
+    }
+
+    /* 卡片样式 - 扁平设计 */
+    .stat-card {
+      background-color: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 0;
+      padding: 24px;
+      transition: all 0.2s ease;
+    }
+
+    .stat-card:hover {
+      background-color: #EFF4F9;
+    }
+
+    /* 功能卡片 */
+    .feature-card {
+      background-color: #FFFFFF;
+      border: 1px solid #E5E7EB;
+      border-radius: 8px;
+      padding: 32px;
+      text-align: center;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .feature-card:hover {
+      border-color: #004098;
+      background-color: #F8FAFC;
+      transform: translateY(-2px);
+    }
+
+    /* 输入框 */
+    .input-field {
+      background-color: #FFFFFF;
+      border: 1px solid #E0E0E0;
+      border-radius: 4px;
+      padding: 10px 16px;
+      font-size: 16px;
+      color: #222222;
+      width: 100%;
+      transition: border-color 0.2s ease;
+    }
+
+    .input-field:focus {
+      outline: none;
+      border-color: #004098;
+    }
+
+    /* 页脚 */
+    .footer {
+      background-color: #0B264A;
+      color: #FFFFFF;
+      padding: 60px 0 40px;
+    }
+
+    .footer a {
+      color: #FFFFFF;
+      text-decoration: none;
+      font-size: 14px;
+      transition: opacity 0.2s ease;
+    }
+
+    .footer a:hover {
+      opacity: 0.8;
+    }
+
+    /* 顶部导航栏 */
+    .top-navbar {
+      background-color: #FFFFFF;
+      border-bottom: 1px solid #E5E7EB;
+      padding: 0 131.67px;
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+    }
+
+    /* 侧边栏 */
+    .sidebar {
+      width: 260px;
+      background-color: #FFFFFF;
+      border-right: 1px solid #E5E7EB;
+      position: fixed;
+      top: 80px;
+      left: 0;
+      bottom: 0;
+      overflow-y: auto;
+    }
+
+    /* 主内容区 */
+    .main-content {
+      margin-left: 260px;
+      margin-top: 80px;
+      padding: 40px 60px;
+      min-height: calc(100vh - 80px);
+    }
+
+    /* 页面间距 */
+    .page-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* 响应式 */
+    @media (max-width: 1024px) {
+      .top-navbar {
+        padding: 0 40px;
+      }
+      .main-content {
+        padding: 40px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+      }
+      .sidebar.open {
+        transform: translateX(0);
+      }
+      .main-content {
+        margin-left: 0;
+        padding: 20px;
+      }
+      .top-navbar {
+        padding: 0 20px;
+        height: 60px;
+      }
+    }
+
+    /* Hero 区域 */
+    .hero-section {
+      background: linear-gradient(135deg, #004098 0%, #0B264A 100%);
+      color: #FFFFFF;
+      padding: 80px 60px;
+      margin: -40px -60px 60px;
+    }
+
+    /* 统计数字 */
+    .stat-number {
+      font-size: 36px;
+      font-weight: 500;
+      color: #004098;
+    }
+
+    /* 状态标签 */
+    .status-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .status-success {
+      background-color: #ECFDF5;
+      color: #059669;
+    }
+
+    .status-warning {
+      background-color: #FFFBEB;
+      color: #D97706;
+    }
+
+    .status-danger {
+      background-color: #FEF2F2;
+      color: #DC2626;
+    }
+  </style>
+</head>
+<body class="bg-white">
+  <!-- 顶部导航栏 -->
+  <nav class="top-navbar">
+    <div class="flex items-center gap-3">
+      <i class="fas fa-flask text-2xl" style="color: #004098;"></i>
+      <h1 class="text-xl font-medium" style="color: #333333;">测试管理平台</h1>
+    </div>
+    <div class="flex items-center gap-4">
+      <button class="btn-secondary">
+        <i class="fas fa-bell"></i>
+        <span class="hidden md:inline">通知</span>
+      </button>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background-color: #E5F8FD; color: #004098;">
+          <i class="fas fa-user"></i>
+        </div>
+        <span class="hidden md:inline" style="color: #333333;">管理员</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 侧边栏 -->
+  <aside class="sidebar">
+    <div class="py-4">
+      <div class="px-5 py-3">
+        <span class="text-xs font-medium uppercase tracking-wider" style="color: #888888;">主菜单</span>
+      </div>
+      <nav>
+        <a href="#" class="nav-item active">
+          <i class="fas fa-home w-5"></i>
+          <span>首页概览</span>
+        </a>
+        <a href="/get_my_website" class="nav-item">
+          <i class="fas fa-globe w-5"></i>
+          <span>网址导航</span>
+        </a>
+        <a href="#" class="nav-item">
+          <i class="fas fa-tasks w-5"></i>
+          <span>测试任务</span>
+        </a>
+        <a href="#" class="nav-item">
+          <i class="fas fa-chart-bar w-5"></i>
+          <span>测试报告</span>
+        </a>
+      </nav>
+
+      <div class="px-5 py-3 mt-6">
+        <span class="text-xs font-medium uppercase tracking-wider" style="color: #888888;">系统管理</span>
+      </div>
+      <nav>
+        <a href="#" class="nav-item">
+          <i class="fas fa-cog w-5"></i>
+          <span>系统配置</span>
+        </a>
+        <a href="#" class="nav-item">
+          <i class="fas fa-users w-5"></i>
+          <span>用户管理</span>
+        </a>
+        <a href="#" class="nav-item">
+          <i class="fas fa-shield-alt w-5"></i>
+          <span>权限管理</span>
+        </a>
+        <a href="#" class="nav-item">
+          <i class="fas fa-file-alt w-5"></i>
+          <span>日志审计</span>
+        </a>
+      </nav>
+    </div>
+  </aside>
+
+  <!-- 主内容区 -->
+  <main class="main-content">
+    <div class="page-container">
+      <!-- Hero 区域 -->
+      <div class="hero-section">
+        <div class="max-w-4xl">
+          <h1 class="text-3xl font-medium mb-4" style="color: #FFFFFF;">欢迎使用测试管理平台</h1>
+          <p class="text-lg mb-8" style="color: rgba(255,255,255,0.8);">专业的测试管理解决方案，助力提升软件质量与交付效率</p>
+          <div class="flex gap-4">
+            <button class="btn-primary">
+              <i class="fas fa-plus"></i>
+              新建测试任务
+            </button>
+            <button class="btn-secondary" style="background-color: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3);">
+              <i class="fas fa-book"></i>
+              查看文档
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 统计卡片 -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-sm font-medium" style="color: #888888;">总测试任务</span>
+            <i class="fas fa-tasks text-xl" style="color: #004098;"></i>
+          </div>
+          <div class="stat-number">128</div>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="text-sm" style="color: #059669;"><i class="fas fa-arrow-up"></i> 12%</span>
+            <span class="text-sm" style="color: #888888;">较上月</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-sm font-medium" style="color: #888888;">待执行</span>
+            <i class="fas fa-clock text-xl" style="color: #E72521;"></i>
+          </div>
+          <div class="stat-number" style="color: #E72521;">23</div>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="text-sm" style="color: #888888;">需尽快处理</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-sm font-medium" style="color: #888888;">执行中</span>
+            <i class="fas fa-spinner text-xl" style="color: #004098;"></i>
+          </div>
+          <div class="stat-number" style="color: #004098;">8</div>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="text-sm" style="color: #888888;">正常运行</span>
+          </div>
+        </div>
+
+        <div class="stat-card">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-sm font-medium" style="color: #888888;">已完成</span>
+            <i class="fas fa-check-circle text-xl" style="color: #059669;"></i>
+          </div>
+          <div class="stat-number" style="color: #059669;">97</div>
+          <div class="flex items-center gap-2 mt-2">
+            <span class="text-sm" style="color: #059669;"><i class="fas fa-arrow-up"></i> 8%</span>
+            <span class="text-sm" style="color: #888888;">较上月</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 快捷功能入口 -->
+      <h2 class="mb-6">快捷功能</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+        <div class="feature-card">
+          <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style="background-color: #E5F8FD;">
+            <i class="fas fa-globe text-2xl" style="color: #004098;"></i>
+          </div>
+          <h3 class="text-lg font-medium mb-2" style="color: #333333;">网址导航</h3>
+          <p class="text-sm mb-4" style="color: #888888;">管理和访问常用网址</p>
+          <a href="/get_my_website" class="link-text">进入 <i class="fas fa-arrow-right text-xs"></i></a>
+        </div>
+
+        <div class="feature-card">
+          <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style="background-color: #FEF2F2;">
+            <i class="fas fa-bug text-2xl" style="color: #E72521;"></i>
+          </div>
+          <h3 class="text-lg font-medium mb-2" style="color: #333333;">缺陷管理</h3>
+          <p class="text-sm mb-4" style="color: #888888;">跟踪和管理软件缺陷</p>
+          <a href="#" class="link-text">进入 <i class="fas fa-arrow-right text-xs"></i></a>
+        </div>
+
+        <div class="feature-card">
+          <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style="background-color: #ECFDF5;">
+            <i class="fas fa-vial text-2xl" style="color: #059669;"></i>
+          </div>
+          <h3 class="text-lg font-medium mb-2" style="color: #333333;">自动化测试</h3>
+          <p class="text-sm mb-4" style="color: #888888;">执行自动化测试用例</p>
+          <a href="#" class="link-text">进入 <i class="fas fa-arrow-right text-xs"></i></a>
+        </div>
+
+        <div class="feature-card">
+          <div class="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4" style="background-color: #FFFBEB;">
+            <i class="fas fa-chart-line text-2xl" style="color: #D97706;"></i>
+          </div>
+          <h3 class="text-lg font-medium mb-2" style="color: #333333;">测试分析</h3>
+          <p class="text-sm mb-4" style="color: #888888;">查看测试数据分析</p>
+          <a href="#" class="link-text">进入 <i class="fas fa-arrow-right text-xs"></i></a>
+        </div>
+      </div>
+
+      <!-- 最近活动 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- 最近任务 -->
+        <div>
+          <div class="flex items-center justify-between mb-6">
+            <h2>最近任务</h2>
+            <a href="#" class="link-text">查看全部 <i class="fas fa-arrow-right text-xs"></i></a>
+          </div>
+          <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+            <table class="w-full">
+              <thead style="background-color: #EFF4F9;">
+                <tr>
+                  <th class="text-left px-6 py-4 text-sm font-medium" style="color: #333333;">任务名称</th>
+                  <th class="text-left px-6 py-4 text-sm font-medium" style="color: #333333;">状态</th>
+                  <th class="text-left px-6 py-4 text-sm font-medium" style="color: #333333;">时间</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="border-t border-gray-100">
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <i class="fas fa-tasks" style="color: #004098;"></i>
+                      <span style="color: #333333;">接口自动化测试</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="status-tag status-success">
+                      <i class="fas fa-check-circle text-xs"></i>
+                      已完成
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-sm" style="color: #888888;">2小时前</td>
+                </tr>
+                <tr class="border-t border-gray-100">
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <i class="fas fa-bug" style="color: #E72521;"></i>
+                      <span style="color: #333333;">安全漏洞扫描</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="status-tag status-warning">
+                      <i class="fas fa-spinner text-xs"></i>
+                      执行中
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-sm" style="color: #888888;">30分钟前</td>
+                </tr>
+                <tr class="border-t border-gray-100">
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <i class="fas fa-code" style="color: #004098;"></i>
+                      <span style="color: #333333;">代码质量检查</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="status-tag status-danger">
+                      <i class="fas fa-exclamation-circle text-xs"></i>
+                      失败
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-sm" style="color: #888888;">昨天</td>
+                </tr>
+                <tr class="border-t border-gray-100">
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                      <i class="fas fa-mobile-alt" style="color: #004098;"></i>
+                      <span style="color: #333333;">移动端兼容性测试</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span class="status-tag status-success">
+                      <i class="fas fa-check-circle text-xs"></i>
+                      已完成
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-sm" style="color: #888888;">2天前</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 系统公告 -->
+        <div>
+          <div class="flex items-center justify-between mb-6">
+            <h2>系统公告</h2>
+            <a href="#" class="link-text">查看全部 <i class="fas fa-arrow-right text-xs"></i></a>
+          </div>
+          <div class="space-y-4">
+            <div class="bg-white border border-gray-200 rounded-lg p-5">
+              <div class="flex items-start gap-4">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: #E5F8FD;">
+                  <i class="fas fa-bullhorn" style="color: #004098;"></i>
+                </div>
+                <div>
+                  <h3 class="font-medium mb-1" style="color: #333333;">系统升级通知</h3>
+                  <p class="text-sm mb-2" style="color: #888888;">平台将于本周六凌晨 2:00-4:00 进行系统升级，期间服务可能短暂中断。</p>
+                  <span class="text-xs" style="color: #888888;">2026-04-10</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-lg p-5">
+              <div class="flex items-start gap-4">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: #ECFDF5;">
+                  <i class="fas fa-rocket" style="color: #059669;"></i>
+                </div>
+                <div>
+                  <h3 class="font-medium mb-1" style="color: #333333;">新功能上线</h3>
+                  <p class="text-sm mb-2" style="color: #888888;">自动化测试模块新增支持 Python 3.12，性能提升 30%。</p>
+                  <span class="text-xs" style="color: #888888;">2026-04-08</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-lg p-5">
+              <div class="flex items-start gap-4">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0" style="background-color: #FEF2F2;">
+                  <i class="fas fa-exclamation-triangle" style="color: #E72521;"></i>
+                </div>
+                <div>
+                  <h3 class="font-medium mb-1" style="color: #333333;">安全提醒</h3>
+                  <p class="text-sm mb-2" style="color: #888888;">请尽快更新您的账户密码，建议使用强密码策略。</p>
+                  <span class="text-xs" style="color: #888888;">2026-04-05</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer" style="margin-left: 260px;">
+    <div class="page-container" style="padding: 0 60px;">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div>
+          <h3 class="text-lg font-medium mb-4" style="color: #FFFFFF;">关于平台</h3>
+          <ul class="space-y-2">
+            <li><a href="#">平台介绍</a></li>
+            <li><a href="#">使用指南</a></li>
+            <li><a href="#">更新日志</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-lg font-medium mb-4" style="color: #FFFFFF;">功能模块</h3>
+          <ul class="space-y-2">
+            <li><a href="#">测试管理</a></li>
+            <li><a href="#">缺陷跟踪</a></li>
+            <li><a href="#">自动化测试</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-lg font-medium mb-4" style="color: #FFFFFF;">帮助支持</h3>
+          <ul class="space-y-2">
+            <li><a href="#">常见问题</a></li>
+            <li><a href="#">技术支持</a></li>
+            <li><a href="#">反馈建议</a></li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="text-lg font-medium mb-4" style="color: #FFFFFF;">联系方式</h3>
+          <ul class="space-y-2">
+            <li><i class="fas fa-envelope mr-2"></i>support@example.com</li>
+            <li><i class="fas fa-phone mr-2"></i>400-123-4567</li>
+          </ul>
+        </div>
+      </div>
+      <div style="border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; text-align: center;">
+        <p style="color: rgba(255,255,255,0.6); font-size: 14px;">测试管理平台 &copy; 2025 版权所有</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // 移动端侧边栏切换
+    function toggleSidebar() {
+      document.querySelector('.sidebar').classList.toggle('open');
+    }
+  </script>
+</body>
+</html>

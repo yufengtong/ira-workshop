@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>业务场景健康度监控系统 - 技术方案报告</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary-blue: #1a5fb4;
+            --light-blue: #3584e4;
+            --bg-blue: #e5f1ff;
+            --border-blue: #99c1f1;
+        }
+        body {
+            background: linear-gradient(135deg, #f0f7ff 0%, #e5f1ff 100%);
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        .cover-gradient {
+            background: linear-gradient(135deg, #1a5fb4 0%, #3584e4 100%);
+        }
+        .section-border {
+            border-left: 4px solid #1a5fb4;
+        }
+        .gradient-bar {
+            background: linear-gradient(to right, #e5f1ff, #99c1f1, #e5f1ff);
+        }
+        .code-block {
+            background: linear-gradient(135deg, #1a365d 0%, #2d4a6f 100%);
+        }
+        .table-header {
+            background-color: #1a5fb4;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(26, 95, 180, 0.15);
+        }
+        .status-healthy { background-color: #22c55e; }
+        .status-warning { background-color: #eab308; }
+        .status-critical { background-color: #ef4444; }
+        .flow-arrow {
+            color: #1a5fb4;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- 文档封面 -->
+    <div class="max-w-5xl mx-auto p-8">
+        <div class="cover-gradient text-white rounded-2xl p-12 mb-8 shadow-2xl">
+            <div class="text-center">
+                <h1 class="text-4xl font-bold mb-4">业务场景健康度监控系统</h1>
+                <h2 class="text-2xl mb-8 opacity-90">技术方案报告</h2>
+                <div class="border-t border-white/30 pt-8 mt-8">
+                    <table class="mx-auto text-left">
+                        <tr>
+                            <td class="pr-8 py-2 opacity-80">项目名称</td>
+                            <td class="py-2 font-semibold">业务场景健康度监控系统（用户旅程看板）</td>
+                        </tr>
+                        <tr>
+                            <td class="pr-8 py-2 opacity-80">文档编号</td>
+                            <td class="py-2">HD-TECH-2026-001</td>
+                        </tr>
+                        <tr>
+                            <td class="pr-8 py-2 opacity-80">版　　本</td>
+                            <td class="py-2">V1.0</td>
+                        </tr>
+                        <tr>
+                            <td class="pr-8 py-2 opacity-80">编制日期</td>
+                            <td class="py-2">2026年4月</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- 目录 -->
+        <div class="gradient-bar rounded-xl p-6 mb-8 shadow-lg">
+            <h3 class="text-xl font-bold text-blue-900 mb-4">目录</h3>
+            <div class="grid grid-cols-2 gap-4 text-blue-800">
+                <a href="#section1" class="hover:text-blue-600 transition">1. 项目背景与需求分析</a>
+                <a href="#section2" class="hover:text-blue-600 transition">2. 项目建设目标</a>
+                <a href="#section3" class="hover:text-blue-600 transition">3. 技术架构方案</a>
+                <a href="#section4" class="hover:text-blue-600 transition">4. 核心功能设计</a>
+                <a href="#section5" class="hover:text-blue-600 transition">5. 组件架构设计</a>
+                <a href="#section6" class="hover:text-blue-600 transition">6. 部署实施方案</a>
+                <a href="#section7" class="hover:text-blue-600 transition">7. 项目总结</a>
+            </div>
+        </div>
+
+        <!-- 1. 项目背景与需求分析 -->
+        <section id="section1" class="bg-white rounded-xl p-8 mb-8 shadow-lg card-hover transition duration-300">
+            <div class="section-border pl-6">
+                <h2 class="text-2xl font-bold text-blue-900 mb-6">1. 项目背景与需求分析</h2>
+                
+                <h3 class="text-lg font-semibold text-blue-800 mb-3">1.1 业务背景</h3>
+                <p class="text-gray-700 mb-4 leading-relaxed">
+                    在现代电商系统中，用户体验的流畅性直接影响业务转化率。从用户登录到完成支付的完整链路中，
+                    任何一个环节出现问题都可能导致用户流失。因此，需要一套实时监控系统来跟踪关键业务流程的健康状态。
+                </p>
+
+                <h3 class="text-lg font-semibold text-blue-800 mb-3">1.2 需求分析</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="table-header text-white">
+                                <th class="p-3 text-left rounded-tl-lg">需求类别</th>
+                                <th class="p-3 text-left rounded-tr-lg">具体需求</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-blue-50">
+                            <tr class="border-b border-blue-200">
+                                <td class="p-3 font-medium text-blue-900">流程可视化</td>
+                                <td class="p-3 text-gray-700">直观展示用户旅程各步骤的状态</td>
+                            </tr>
+                            <tr class="border-b border-blue-200">
+                                <td class="p-3 font-medium text-blue-900">实时监控</td>
+                                <td class="p-3 text-gray-700">显示自动化测试通过率和响应时间</td>
+                            </tr>
+                            <tr class="border-b border-blue-200">
+                                <td class="p-3 font-medium text-blue-900">状态标识</td>
+                                <td class="p-3 text-gray-700">红绿灯标识健康状态（健康/警告/严重）</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-medium text-blue-900">异常告警</td>
+                                <td class="p-3 text-gray-700">链路断裂时自动高亮异常节点</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. 项目建设目标 -->
+        <section id="section2" class="bg-white rounded-xl p-8 mb-8 shadow-lg card-hover transition duration-300">
+            <div class="section-border pl-6">
+                <h2 class="text-2xl font-bold text-blue-900 mb-6">2. 项目建设目标</h2>
+                
+                <div class="code-block text-white rounded-xl p-6 font-mono text-sm">
+                    <div class="text-center mb-4 text-blue-300">项目建设目标</div>
+                    <div class="space-y-2">
+                        <div>✓ 流程可视化：清晰展示登录→搜索→加购→下单→支付完整链路</div>
+                        <div>✓ 实时监控：每5秒自动刷新测试通过率和响应时间</div>
+                        <div>✓ 智能告警：通过率&lt;70%或响应时间&gt;1000ms自动标记为严重</div>
+                        <div>✓ 链路追踪：异常节点自动高亮，快速定位问题</div>
+                        <div>✓ 直观展示：红绿灯标识 + 动画效果，一目了然</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. 技术架构方案 -->
+        <section id="section3" class="bg-white rounded-xl p-8 mb-8 shadow-lg card-hover transition duration-300">
+            <div class="section-border pl-6">
+                <h2 class="text-2xl font-bold text-blue-900 mb-6">3. 技术架构方案</h2>
+                
+                <h3 class="text-lg font-semibold text-blue-800 mb-3">3.1 技术选型</h3>
+                <div class="overflow-x-auto mb-6">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="table-header text-white">
+                                <th class="p-3 text-left rounded-tl-lg">技术项</th>
+                                <th class="p-3 text-left">选型方案</th>
+                                <th class="p-3 text-left rounded-tr-lg">选型理由</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-blue-50">
+                            <tr class="border-b border-blue-200">
+                                <td class="p-3 font-medium text-blue-900">前端框架</td>
+                                <td class="p-3">React 18 + TypeScript</td>
+                                <td class="p-3 text-gray-700">组件化开发，类型安全</td>
+                            </tr>
+                            <tr class="border-b border-blue-200">
+                                <td class="p-3 font-medium text-blue-900">构建工具</td>
+                                <td class="p-3">Vite 5</td>
+                                <td class="p-3 text-gray-700">快速冷启动，热更新</td>
+                            </tr>
+                            <tr class="border-b border-blue-200">
+                                <td class="p-3 font-medium text-blue-900">样式方案</td>
+                                <td class="p-3">Tailwind CSS 4</td>
+                                <td class="p-3 text-gray-700">原子化CSS，快速开发</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-medium text-blue-900">开发语言</td>
+                                <td class="p-3">TypeScript 5</td>
+                                <td class="p-3 text-gray-700">强类型，IDE友好</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="text-lg font-semibold text-blue-800 mb-3">3.2 系统架构图</h3>
+                <div class="code-block text-white rounded-xl p-6 font-mono text-xs overflow-x-auto">
+<pre>
+┌─────────────────────────────────────────────────────────────────┐
+│                        用户旅程流程                               │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐ │
+│   │ 🔐 登录   │───▶│ 🔍 搜索   │───▶│ 🛒 加购   │───▶│ 📋 下单   │ │
+│   └──────────┘    └──────────┘    └──────────┘    └──────────┘ │
+│                                                          │      │
+│                                                          ▼      │
+│                                                   ┌──────────┐  │
+│                                                   │ 💳 支付   │  │
+│                                                   └──────────┘  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      健康状态计算引擎                             │
+├─────────────────────────────────────────────────────────────────┤
+│  • 测试通过率计算 (passRate)                                     │
+│  • 响应时间监控 (avgResponseTime)                                │
+│  • 健康状态判定 (HEALTHY/WARNING/CRITICAL)                       │
+│  • 链路断裂检测 (detectBrokenStep)                               │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      可视化展示层                                 │
+├─────────────────────────────────────────────────────────────────┤
+│  • TrafficLight 红绿灯组件                                       │
+│  • StepCard 步骤卡片                                             │
+│  • JourneyFlow 流程图                                            │
+│  • OverallStatus 整体状态                                        │
+└─────────────────────────────────────────────────────────────────┘
+</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. 核心功能设计 -->
+        <section id="section4" class="bg-white rounded-xl p-8 mb-8 shadow-lg card-hover transition duration-300">
+            <div class="section-border pl-6">
+                <h2 class="text-2xl font-bold text-blue-900 mb-6">4. 核心功能设计</h2>
+                
+                <h3 class="text-lg font-semibold text-blue-800 mb-3">4.1 用户旅程流程</h3>
+                <div class="flex flex-wrap items-center justify-center gap-2 mb-6 p-4 bg-gray-50 rounded-xl">
+                    <div class="flex items-center bg-white px-4 py-2 rounded-lg shadow">
+                        <span class="text-2xl mr-2">🔐</span>
+                        <span class="font-medium">用户登录</span>
+                    </div>
+                    <span class="flow-arrow text-2xl">→</span>
+                    <div class="flex items-center bg-white px-4 py-2 rounded-lg shadow">
+                        <span class="text-2xl mr-2">🔍</span>
+                        <span class="font-medium">商品搜索</span>
+                    </div>
+                    <span class="flow-arrow text-2xl">→</span>
+                    <div class="flex items-center bg-white px-4 py-2 rounded-lg shadow">
+                        <span class="text-2xl mr-2">🛒</span>
+                        <span class="font-medium">加入购物车</span>
+                    </div>
+                    <span class="flow-arrow text-2xl">→</span>
+                    <div class="flex items-center bg-white px-4 py-2 rounded-lg shadow">
+                        <span class="text-2xl mr-2">📋</span>
+                        <span class="font-medium">提交订单</span>
+                    </div>
+                    <span class="flow-arrow text-2xl">→</span>
+                    <div class="flex items-center bg-white px-4 py-2 rounded-lg shadow">
+                        <span class="text-2xl mr-2">💳</span>
+                        <span class="font-medium">支付结算</span>
+                    </div>
+                </div>
+
+                <h3 class="text-lg font-semibold text-blue-800 mb-3">4.2 健康状态判定规则</h3>
+                <div class="overflow-x-auto mb-6">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="table-header text-white">
+                                <th class="p-3 text-left rounded-tl-lg">状态</th>
+                                <th class="p-3 text-left">颜色</th>
+                                <th class="p-3 text-left">判定条件</th>
+                                <th class="p-3 text-left rounded-tr-lg">说明</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-blue-50">
+                            <tr class="border-b border-blue-200">
+                                <td class="p-3 font-medium"><span class="inline-block w-3 h-3 rounded-full status-healthy mr-2"></span>健康</td>
+                                <td class="p-3 text-green-600 font-medium">绿色</td>
+                                <td class="p-3">通过率≥90% 且 响应时间≤500ms</td>
+                                <td class="p-3 text-gray-700">正常运行</td>
+                            </tr>
+                            <tr class="border-b border-blue-200">
+                                <td class="p-3 font-medium"><span class="inline-block w-3 h-3 rounded-full status-warning mr-2"></span>警告</td>
+                                <td class="p-3 text-yellow-600 font-medium">黄色</td>
+                                <td class="p-3">通过率70-90% 或 响应时间500-1000ms</td>
+                                <td class="p-3 text-gray-700">需要关注</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-medium"><span class="inline-block w-3 h-3 rounded-full status-critical mr-2"></span>严重</td>
+                                <td class="p-3 text-red-600 font-medium">红色</td>
+                                <td class="p-3">通过率&lt;70% 或 响应时间&gt;1000ms</td>
+                                <td class="p-3 text-gray-700">链路断裂</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="text-lg font-semibold text-blue-800 mb-3">4.3 数据模型设计</h3>
+                <div class="code-block text-white rounded-xl p-6 font-mono text-sm overflow-x-auto">
+<pre>
+// 健康状态枚举
+enum HealthStatus {
+  HEALTHY = 'healthy',      // 绿色 - 健康
+  WARNING = 'warning',      // 黄色 - 警告
+  CRITICAL = 'critical',    // 红色 - 严重
+}
+
+// 步骤指标数据
+interface StepMetrics {
+  stepId: string;            // 步骤ID
+  passRate: number;          // 测试通过率 (%)
+  avgResponseTime: number;   // 平均响应时间 (ms)
+  totalTests: number;        // 总测试数
+  passedTests: number;       // 通过测试数
+  lastUpdated: Date;         // 最后更新时间
+}
+
+// 步骤健康状态
+interface StepHealth {
+  step: BusinessStep;        // 步骤信息
+  metrics: StepMetrics;      // 指标数据
+  status: HealthStatus;      // 健康状态
+  isBroken: boolean;         // 是否链路断裂
+}
+</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. 组件架构设计 -->
+        <section id="section5" class="bg-white rounded-xl p-8 mb-8 shadow-lg card-hover transition duration-300">
+            <div class="section-border pl-6">
+                <h2 class="text-2xl font-bold text-blue-900 mb-6">5. 组件架构设计</h2>
+                
+                <h3 class="text-lg font-semibold text-blue-800 mb-3">5.1 组件清单</h3>
+                <div class="overflow-x-auto mb-6">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="table-header text-white">
+                                <th class="p-3 text-left rounded-tl-lg">组件名称</th>
+                                <th class="p-3 text-left">文件路径</th>
+                                <th class="p-3 text-left rounded-tr-lg">功能说明</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-blue-50">
+                            <tr class="border-b border-blue-200">
+                                <td class="p-3 font-medium text-blue-900">TrafficLight</td>
+                                <td class="p-3 font-mono text-sm">components/TrafficLight.tsx</td>
+                                <td class="p-3 text-gray-700">红绿灯状态指示器</td>
+                            </tr>
+                            <tr class="border-b border-blue-200">
+                                <td class="p-3 font-medium text-blue-900">StepCard</td>
+                                <td class="p-3 font-mono text-sm">components/StepCard.tsx</td>
+                                <td class="p-3 text-gray-700">单个步骤卡片，显示详细指标</td>
+                            </tr>
+                            <tr class="border-b border-blue-200">
+                                <td class="p-3 font-medium text-blue-900">JourneyFlow</td>
+                                <td class="p-3 font-mono text-sm">components/JourneyFlow.tsx</td>
+                                <td class="p-3 text-gray-700">流程图容器，组织步骤卡片</td>
+                            </tr>
+                            <tr class="border-b border-blue-200">
+                                <td class="p-3 font-medium text-blue-900">OverallStatus</td>
+                                <td class="p-3 font-mono text-sm">components/OverallStatus.tsx</td>
+                                <td class="p-3 text-gray-700">整体状态展示面板</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-medium text-blue-900">App</td>
+                                <td class="p-3 font-mono text-sm">App.tsx</td>
+                                <td class="p-3 text-gray-700">主应用组件，数据管理</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="text-lg font-semibold text-blue-800 mb-3">5.2 组件关系图</h3>
+                <div class="code-block text-white rounded-xl p-6 font-mono text-sm overflow-x-auto">
+<pre>
+App (主应用)
+  │
+  ├── OverallStatus (整体状态面板)
+  │     └── TrafficLight (大型红绿灯)
+  │
+  └── JourneyFlow (流程图)
+        │
+        └── StepCard (步骤卡片) × 5
+              ├── TrafficLight (小型红绿灯)
+              ├── 步骤图标 + 名称
+              ├── 通过率指标
+              ├── 响应时间指标
+              └── 测试数量
+</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. 部署实施方案 -->
+        <section id="section6" class="bg-white rounded-xl p-8 mb-8 shadow-lg card-hover transition duration-300">
+            <div class="section-border pl-6">
+                <h2 class="text-2xl font-bold text-blue-900 mb-6">6. 部署实施方案</h2>
+                
+                <h3 class="text-lg font-semibold text-blue-800 mb-3">6.1 环境要求</h3>
+                <div class="overflow-x-auto mb-6">
+                    <table class="w-full border-collapse">
+                        <thead>
+                            <tr class="table-header text-white">
+                                <th class="p-3 text-left rounded-tl-lg">资源项</th>
+                                <th class="p-3 text-left">最低配置</th>
+                                <th class="p-3 text-left rounded-tr-lg">推荐配置</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-blue-50">
+                            <tr class="border-b border-blue-200">
+                                <td class="p-3 font-medium text-blue-900">Node.js</td>
+                                <td class="p-3">18.0+</td>
+                                <td class="p-3">20.0+</td>
+                            </tr>
+                            <tr class="border-b border-blue-200">
+                                <td class="p-3 font-medium text-blue-900">浏览器</td>
+                                <td class="p-3">Chrome 90+ / Edge 90+</td>
+                                <td class="p-3">最新版本</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-medium text-blue-900">内存</td>
+                                <td class="p-3">4GB</td>
+                                <td class="p-3">8GB+</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3 class="text-lg font-semibold text-blue-800 mb-3">6.2 部署步骤</h3>
+                <div class="code-block text-white rounded-xl p-6 font-mono text-sm">
+                    <div class="text-blue-300 mb-2"># 1. 安装依赖</div>
+                    <div class="mb-4">npm install</div>
+                    
+                    <div class="text-blue-300 mb-2"># 2. 启动开发服务器</div>
+                    <div class="mb-4">npm run dev</div>
+                    
+                    <div class="text-blue-300 mb-2"># 3. 构建生产版本</div>
+                    <div class="mb-4">npm run build</div>
+                    
+                    <div class="text-blue-300 mb-2"># 4. 预览生产版本</div>
+                    <div>npm run preview</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. 项目总结 -->
+        <section id="section7" class="bg-white rounded-xl p-8 mb-8 shadow-lg card-hover transition duration-300">
+            <div class="section-border pl-6">
+                <h2 class="text-2xl font-bold text-blue-900 mb-6">7. 项目总结</h2>
+                
+                <h3 class="text-lg font-semibold text-blue-800 mb-3">7.1 功能亮点</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <div class="font-semibold text-blue-900 mb-2">🚦 红绿灯状态指示</div>
+                        <div class="text-gray-700 text-sm">直观的三色灯系统，一眼识别系统健康状态</div>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <div class="font-semibold text-blue-900 mb-2">📊 实时数据监控</div>
+                        <div class="text-gray-700 text-sm">每5秒自动刷新，展示最新测试通过率和响应时间</div>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <div class="font-semibold text-blue-900 mb-2">⚠️ 智能告警</div>
+                        <div class="text-gray-700 text-sm">链路断裂自动高亮，脉冲动画提醒异常节点</div>
+                    </div>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <div class="font-semibold text-blue-900 mb-2">🎨 现代化UI</div>
+                        <div class="text-gray-700 text-sm">深色主题设计，Tailwind CSS 响应式布局</div>
+                    </div>
+                </div>
+
+                <h3 class="text-lg font-semibold text-blue-800 mb-3">7.2 技术栈总结</h3>
+                <div class="flex flex-wrap gap-2 mb-6">
+                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">React 18</span>
+                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">TypeScript 5</span>
+                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Vite 5</span>
+                    <span class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Tailwind CSS 4</span>
+                </div>
+
+                <div class="text-center text-gray-600 mt-8 pt-8 border-t border-gray-200">
+                    <p>文档结束</p>
+                    <p class="text-sm mt-2">业务场景健康度监控系统 V1.0</p>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+</html>
