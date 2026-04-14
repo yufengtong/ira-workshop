@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>技术方案报告</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --color-brand-red: #E72521;
+            --color-brand-blue: #004098;
+            --color-dark-blue: #0B264A;
+            --color-white: #FFFFFF;
+            --color-dark-gray: #333333;
+            --color-text: #222222;
+            --color-gray: #888888;
+            --color-light-bg: #EFF4F9;
+            --color-light-blue: #E5F8FD;
+        }
+        
+        body {
+            font-family: -apple-system, "system-ui", "Segoe UI", system-ui, Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial;
+            color: var(--color-text);
+            line-height: 1.6;
+        }
+        
+        h1 { font-size: 28px; font-weight: 500; color: var(--color-dark-gray); margin-bottom: 18.76px; }
+        h2 { font-size: 30px; font-weight: 500; color: var(--color-dark-gray); margin-bottom: 20px; }
+        h3 { font-size: 24px; font-weight: 500; color: var(--color-dark-gray); margin-bottom: 16px; }
+        
+        .btn-primary {
+            background-color: var(--color-brand-red);
+            color: var(--color-white);
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-primary:hover { background-color: #D41F1B; }
+        
+        .btn-secondary {
+            background-color: var(--color-brand-blue);
+            color: var(--color-white);
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .link-text {
+            color: var(--color-brand-blue);
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .link-text:hover { text-decoration: underline; }
+        
+        .toc-item {
+            color: var(--color-brand-blue);
+            text-decoration: none;
+            display: block;
+            padding: 8px 0;
+            border-bottom: 1px solid #E5E7EB;
+        }
+        
+        .toc-item:hover { color: var(--color-brand-red); }
+        
+        code {
+            background-color: var(--color-light-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 14px;
+        }
+        
+        pre {
+            background-color: var(--color-light-bg);
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        
+        pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        th, td {
+            border: 1px solid #E5E7EB;
+            padding: 12px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: var(--color-light-bg);
+            font-weight: 500;
+            color: var(--color-dark-gray);
+        }
+        
+        .color-box {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-right: 12px;
+            border: 1px solid #E5E7EB;
+        }
+        
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background-color: var(--color-white);
+            border-right: 1px solid #E5E7EB;
+            overflow-y: auto;
+            padding: 24px;
+        }
+        
+        .main-content {
+            margin-left: 280px;
+            padding: 40px 60px;
+            max-width: 900px;
+        }
+        
+        .section {
+            margin-bottom: 60px;
+        }
+        
+        .divider {
+            border: none;
+            border-top: 1px solid #E5E7EB;
+            margin: 40px 0;
+        }
+        
+        .highlight-box {
+            background-color: var(--color-light-blue);
+            border-left: 4px solid var(--color-brand-blue);
+            padding: 16px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            margin: 12px 0;
+        }
+        
+        .check-item i {
+            color: var(--color-brand-red);
+            margin-right: 12px;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body class="bg-white">
+    <!-- 侧边栏导航 -->
+    <nav class="sidebar">
+        <div class="mb-6">
+            <h1 class="text-xl font-medium text-gray-800 mb-2">技术方案报告</h1>
+            <p class="text-sm text-gray-500">设计规范文档</p>
+        </div>
+        
+        <div class="space-y-1">
+            <a href="#summary" class="toc-item"><i class="fas fa-clipboard-list mr-2"></i>执行摘要</a>
+            <a href="#catalog" class="toc-item"><i class="fas fa-list mr-2"></i>目录</a>
+            <a href="#overview" class="toc-item"><i class="fas fa-info-circle mr-2"></i>1. 项目概述</a>
+            <a href="#quickstart" class="toc-item"><i class="fas fa-rocket mr-2"></i>2. 快速开始</a>
+            <a href="#architecture" class="toc-item"><i class="fas fa-sitemap mr-2"></i>3. 核心架构</a>
+            <a href="#api" class="toc-item"><i class="fas fa-code mr-2"></i>4. API参考</a>
+            <a href="#skills" class="toc-item"><i class="fas fa-puzzle-piece mr-2"></i>5. 技能系统</a>
+            <a href="#channels" class="toc-item"><i class="fas fa-plug mr-2"></i>6. 通道集成</a>
+            <a href="#security" class="toc-item"><i class="fas fa-shield-alt mr-2"></i>7. 安全系统</a>
+            <a href="#models" class="toc-item"><i class="fas fa-brain mr-2"></i>8. 模型管理</a>
+            <a href="#frontend" class="toc-item"><i class="fas fa-desktop mr-2"></i>9. 前端控制台</a>
+            <a href="#cli" class="toc-item"><i class="fas fa-terminal mr-2"></i>10. 命令行工具</a>
+            <a href="#config" class="toc-item"><i class="fas fa-cog mr-2"></i>11. 配置管理</a>
+            <a href="#testing" class="toc-item"><i class="fas fa-vial mr-2"></i>12. 测试策略</a>
+            <a href="#deployment" class="toc-item"><i class="fas fa-server mr-2"></i>13. 部署运维</a>
+            <a href="#development" class="toc-item"><i class="fas fa-code-branch mr-2"></i>14. 开发指南</a>
+            <a href="#design" class="toc-item"><i class="fas fa-palette mr-2"></i>附录：设计规范</a>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+        <!-- 执行摘要 -->
+        <section id="summary" class="section">
+            <h1>📋 执行摘要</h1>
+            <div class="highlight-box">
+                <p class="text-gray-700">本技术方案报告采用<strong>现代金融科技风格</strong>的设计语言，参考南方基金官网（<a href="https://www.nffund.com/" class="link-text">https://www.nffund.com/</a>）的视觉设计，强调<strong>专业性、信任度和易用性</strong>。设计遵循<strong>扁平化设计</strong>原则，使用<strong>冷色调</strong>（蓝色系）和<strong>暖色强调</strong>（红色）相结合，营造出既稳重又充满活力的视觉效果。</p>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- 目录 -->
+        <section id="catalog" class="section">
+            <h1>📑 目录</h1>
+            <div class="grid grid-cols-2 gap-4">
+                <ul class="space-y-2 text-gray-700">
+                    <li><a href="#overview" class="link-text">1. 项目概述</a></li>
+                    <li><a href="#quickstart" class="link-text">2. 快速开始</a></li>
+                    <li><a href="#architecture" class="link-text">3. 核心架构</a></li>
+                    <li><a href="#api" class="link-text">4. API参考</a></li>
+                    <li><a href="#skills" class="link-text">5. 技能系统</a></li>
+                    <li><a href="#channels" class="link-text">6. 通道集成</a></li>
+                    <li><a href="#security" class="link-text">7. 安全系统</a></li>
+                </ul>
+                <ul class="space-y-2 text-gray-700">
+                    <li><a href="#models" class="link-text">8. 模型管理</a></li>
+                    <li><a href="#frontend" class="link-text">9. 前端控制台</a></li>
+                    <li><a href="#cli" class="link-text">10. 命令行工具</a></li>
+                    <li><a href="#config" class="link-text">11. 配置管理</a></li>
+                    <li><a href="#testing" class="link-text">12. 测试策略</a></li>
+                    <li><a href="#deployment" class="link-text">13. 部署运维</a></li>
+                    <li><a href="#development" class="link-text">14. 开发指南</a></li>
+                    <li><a href="#design" class="link-text">附录：设计规范</a></li>
+                </ul>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- 1. 项目概述 -->
+        <section id="overview" class="section">
+            <h1>1. 项目概述</h1>
+            
+            <h2>1.1 项目背景</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：项目背景、目标、范围等基本信息</p>
+            </div>
+            
+            <h2>1.2 技术栈</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：使用的技术栈、框架、工具等</p>
+            </div>
+            
+            <h2>1.3 术语定义</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：项目中使用的专业术语和定义</p>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- 2. 快速开始 -->
+        <section id="quickstart" class="section">
+            <h1>2. 快速开始</h1>
+            
+            <h2>2.1 环境要求</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：运行环境、依赖版本等</p>
+            </div>
+            
+            <h2>2.2 安装步骤</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：安装命令和步骤</p>
+            </div>
+            
+            <h2>2.3 第一个示例</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：快速上手示例代码</p>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- 3. 核心架构 -->
+        <section id="architecture" class="section">
+            <h1>3. 核心架构</h1>
+            
+            <h2>3.1 系统架构图</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：系统整体架构图和说明</p>
+            </div>
+            
+            <h2>3.2 模块划分</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：核心模块及其职责</p>
+            </div>
+            
+            <h2>3.3 数据流</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：数据流转过程说明</p>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- 4. API参考 -->
+        <section id="api" class="section">
+            <h1>4. API参考</h1>
+            
+            <h2>4.1 接口规范</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：API 设计规范、认证方式等</p>
+            </div>
+            
+            <h2>4.2 接口列表</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：详细的 API 接口文档</p>
+            </div>
+            
+            <h2>4.3 错误码</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：错误码定义和说明</p>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- 5. 技能系统 -->
+        <section id="skills" class="section">
+            <h1>5. 技能系统</h1>
+            
+            <h2>5.1 技能概述</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：技能系统的基本概念</p>
+            </div>
+            
+            <h2>5.2 技能开发</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：如何开发自定义技能</p>
+            </div>
+            
+            <h2>5.3 技能管理</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：技能的注册、更新、删除等操作</p>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- 6. 通道集成 -->
+        <section id="channels" class="section">
+            <h1>6. 通道集成</h1>
+            
+            <h2>6.1 通道类型</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：支持的通道类型（Web、API、CLI 等）</p>
+            </div>
+            
+            <h2>6.2 集成方式</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：各通道的集成方法和配置</p>
+            </div>
+            
+            <h2>6.3 消息协议</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：消息格式和通信协议</p>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- 7. 安全系统 -->
+        <section id="security" class="section">
+            <h1>7. 安全系统</h1>
+            
+            <h2>7.1 认证机制</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：用户认证、权限管理等</p>
+            </div>
+            
+            <h2>7.2 数据安全</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：数据加密、传输安全等</p>
+            </div>
+            
+            <h2>7.3 审计日志</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：操作审计和日志记录</p>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- 8. 模型管理 -->
+        <section id="models" class="section">
+            <h1>8. 模型管理</h1>
+            
+            <h2>8.1 模型配置</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：AI 模型的配置参数</p>
+            </div>
+            
+            <h2>8.2 模型切换</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：多模型管理和切换策略</p>
+            </div>
+            
+            <h2>8.3 性能优化</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：模型推理性能优化方案</p>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- 9. 前端控制台 -->
+        <section id="frontend" class="section">
+            <h1>9. 前端控制台</h1>
+            
+            <h2>9.1 界面说明</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：前端界面功能介绍</p>
+            </div>
+            
+            <h2>9.2 使用指南</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：控制台操作指南</p>
+            </div>
+            
+            <h2>9.3 自定义主题</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：主题定制方法</p>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- 10. 命令行工具 -->
+        <section id="cli" class="section">
+            <h1>10. 命令行工具</h1>
+            
+            <h2>10.1 安装与配置</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：CLI 工具安装步骤</p>
+            </div>
+            
+            <h2>10.2 命令列表</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：支持的命令和参数</p>
+            </div>
+            
+            <h2>10.3 使用示例</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：常用命令示例</p>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- 11. 配置管理 -->
+        <section id="config" class="section">
+            <h1>11. 配置管理</h1>
+            
+            <h2>11.1 配置文件</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：配置文件结构和说明</p>
+            </div>
+            
+            <h2>11.2 环境变量</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：支持的环境变量</p>
+            </div>
+            
+            <h2>11.3 动态配置</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：运行时配置更新</p>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- 12. 测试策略 -->
+        <section id="testing" class="section">
+            <h1>12. 测试策略</h1>
+            
+            <h2>12.1 单元测试</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：单元测试框架和方法</p>
+            </div>
+            
+            <h2>12.2 集成测试</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：集成测试策略</p>
+            </div>
+            
+            <h2>12.3 性能测试</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：性能测试方案和指标</p>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- 13. 部署运维 -->
+        <section id="deployment" class="section">
+            <h1>13. 部署运维</h1>
+            
+            <h2>13.1 部署方案</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：部署架构和流程</p>
+            </div>
+            
+            <h2>13.2 监控告警</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：监控指标和告警配置</p>
+            </div>
+            
+            <h2>13.3 故障处理</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：常见问题排查和处理</p>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- 14. 开发指南 -->
+        <section id="development" class="section">
+            <h1>14. 开发指南</h1>
+            
+            <h2>14.1 开发规范</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：代码规范、提交规范等</p>
+            </div>
+            
+            <h2>14.2 贡献流程</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：如何参与项目贡献</p>
+            </div>
+            
+            <h2>14.3 版本管理</h2>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <p class="text-gray-600 italic">待补充：版本发布计划和策略</p>
+            </div>
+        </section>
+
+        <hr class="divider">
+
+        <!-- 附录：设计规范 -->
+        <section id="design" class="section">
+            <h1>附录：设计规范</h1>
+            
+            <h2>A.1 主色调分析</h2>
+            
+            <h3>品牌主色</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>色彩类型</th>
+                        <th>HEX值</th>
+                        <th>RGB值</th>
+                        <th>应用场景</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>主色 - 品牌红</strong></td>
+                        <td><code>#E72521</code></td>
+                        <td><code>rgb(231, 37, 33)</code></td>
+                        <td>CTA主要按钮、强调元素、重点提示</td>
+                    </tr>
+                    <tr>
+                        <td><strong>副色 - 企业蓝</strong></td>
+                        <td><code>#004098</code></td>
+                        <td><code>rgb(0, 64, 152)</code></td>
+                        <td>导航链接、次要按钮、交互元素</td>
+                    </tr>
+                    <tr>
+                        <td><strong>页脚背景色</strong></td>
+                        <td><code>#0B264A</code></td>
+                        <td><code>rgb(11, 38, 74)</code></td>
+                        <td>页脚背景、深色区域</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="highlight-box">
+                <p class="font-medium mb-2">色彩寓意：</p>
+                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                    <li><strong>红色（#E72521）</strong>：代表活力、信心、紧迫性，引导用户进行重要操作</li>
+                    <li><strong>深蓝（#004098）</strong>：象征专业、信任、稳定，符合金融行业特质</li>
+                    <li><strong>深墨蓝（#0B264A）</strong>：提供深层背景，增强品牌统一性</li>
+                </ul>
+            </div>
+            
+            <h3>中性色系</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>色彩名称</th>
+                        <th>HEX值</th>
+                        <th>RGB值</th>
+                        <th>应用场景</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>纯白</td>
+                        <td><code>#FFFFFF</code></td>
+                        <td><code>rgb(255, 255, 255)</code></td>
+                        <td>主要背景、卡片背景、文本背景</td>
+                    </tr>
+                    <tr>
+                        <td>深灰（标题）</td>
+                        <td><code>#333333</code></td>
+                        <td><code>rgb(51, 51, 51)</code></td>
+                        <td>标题、标签文本、重要信息</td>
+                    </tr>
+                    <tr>
+                        <td>浅灰（正文）</td>
+                        <td><code>#222222</code></td>
+                        <td><code>rgb(34, 34, 34)</code></td>
+                        <td>正文、描述文本、主要内容</td>
+                    </tr>
+                    <tr>
+                        <td>中灰（辅助）</td>
+                        <td><code>#888888</code></td>
+                        <td><code>rgb(136, 136, 136)</code></td>
+                        <td>辅助文本、时间戳、次要信息</td>
+                    </tr>
+                    <tr>
+                        <td>浅背景灰</td>
+                        <td><code>#EFF4F9</code></td>
+                        <td><code>rgb(239, 244, 249)</code></td>
+                        <td>内容区域背景、模块分割</td>
+                    </tr>
+                    <tr>
+                        <td>极浅蓝</td>
+                        <td><code>#E5F8FD</code></td>
+                        <td><code>rgb(229, 248, 253)</code></td>
+                        <td>信息提示区域背景</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="highlight-box">
+                <p class="font-medium mb-2">配色特点：</p>
+                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                    <li>使用灰度系列实现视觉层级感</li>
+                    <li>高对比度确保可读性</li>
+                    <li>浅色背景营造简洁、专业的氛围</li>
+                </ul>
+            </div>
+
+            <h2>A.2 字体样式分析</h2>
+            
+            <h3>字体族群</h3>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+                <p class="font-medium mb-2">系统字体堆栈（从上到下依次调用）：</p>
+                <pre><code>-apple-system, 
+"system-ui", 
+"Segoe UI", 
+system-ui, 
+Roboto, 
+Ubuntu, 
+Cantarell, 
+"Noto Sans", 
+sans-serif, 
+"PingFang SC",        /* 苹果苹方体 - 中文首选 */
+"Microsoft YaHei",    /* 微软雅黑 - Windows中文 */
+"Helvetica Neue", 
+Helvetica, 
+Arial</code></pre>
+            </div>
+            
+            <div class="highlight-box">
+                <p class="font-medium mb-2">特点：</p>
+                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                    <li>采用<strong>系统字体优先</strong>策略，无需加载外部字体文件</li>
+                    <li>Mac系统优先使用"PingFang SC"（苹方），提升视觉效果</li>
+                    <li>Windows系统使用"Microsoft YaHei"（微软雅黑），保证中文显示</li>
+                    <li>降级方案确保各平台的最佳显示效果</li>
+                </ul>
+            </div>
+            
+            <h3>标题字体样式</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>标题等级</th>
+                        <th>字号</th>
+                        <th>字重</th>
+                        <th>行高</th>
+                        <th>颜色</th>
+                        <th>下边距</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>H1</strong></td>
+                        <td>28px</td>
+                        <td>500</td>
+                        <td>30.8px</td>
+                        <td><code>#FFFFFF</code></td>
+                        <td>18.76px</td>
+                    </tr>
+                    <tr>
+                        <td><strong>H2</strong></td>
+                        <td>30px</td>
+                        <td>500</td>
+                        <td>33px</td>
+                        <td><code>#333333</code></td>
+                        <td>20px</td>
+                    </tr>
+                    <tr>
+                        <td><strong>H3</strong></td>
+                        <td>24px</td>
+                        <td>500</td>
+                        <td>~26.4px</td>
+                        <td><code>#333333</code></td>
+                        <td>~16px</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="highlight-box">
+                <p class="font-medium mb-2">特点：</p>
+                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                    <li>字重统一为 <strong>500</strong>（Medium），视觉柔和但有分量感</li>
+                    <li>行高为字号的 <strong>1.1-1.15倍</strong>，便于阅读</li>
+                    <li>H1使用白色，通常出现在深色背景hero区域</li>
+                    <li>H2/H3使用深灰，确保内容区的可读性</li>
+                </ul>
+            </div>
+            
+            <h3>正文字体样式</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>字体类型</th>
+                        <th>字号</th>
+                        <th>字重</th>
+                        <th>行高</th>
+                        <th>颜色</th>
+                        <th>应用</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>正文</strong></td>
+                        <td>18px</td>
+                        <td>400</td>
+                        <td>正常</td>
+                        <td><code>#222222</code></td>
+                        <td>长文本内容</td>
+                    </tr>
+                    <tr>
+                        <td><strong>小文本</strong></td>
+                        <td>14px</td>
+                        <td>400</td>
+                        <td>正常</td>
+                        <td><code>#888888</code></td>
+                        <td>时间、标签、次要信息</td>
+                    </tr>
+                    <tr>
+                        <td><strong>链接文本</strong></td>
+                        <td>16px</td>
+                        <td>400</td>
+                        <td>正常</td>
+                        <td><code>#004098</code></td>
+                        <td>导航、CTA链接</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="highlight-box">
+                <p class="font-medium mb-2">特点：</p>
+                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                    <li>正文字号为<strong>18px</strong>，相对较大，提升阅读体验</li>
+                    <li>行高设置合理，文本密集度适中</li>
+                    <li>字重均为<strong>400</strong>（Regular），保持内容的中立性</li>
+                </ul>
+            </div>
+            
+            <h3>按钮文本</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>按钮类型</th>
+                        <th>字号</th>
+                        <th>字重</th>
+                        <th>行高</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>主要按钮</td>
+                        <td>16px</td>
+                        <td>400</td>
+                        <td>48px</td>
+                    </tr>
+                    <tr>
+                        <td>次要按钮</td>
+                        <td>14px</td>
+                        <td>400</td>
+                        <td>正常</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>A.3 布局风格分析</h2>
+            
+            <h3>整体布局结构</h3>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+                <pre class="text-sm">┌─────────────────────────────────────────┐
+│  顶部导航栏（固定/覆盖层）              │ 高度: 758px
+│  - 左: 集团导航                         │ 背景: 透明/半透明
+│  - 中: 主菜单                           │
+│  - 右: 账户操作、语言切换               │
+└─────────────────────────────────────────┘
+│                                         │
+│  英雄区域 (Hero Section)                │
+│  - 背景图片 + 文案                      │ 高度: 725.86px
+│  - 内容两侧间距: 131.67px               │ 内边距: 60px
+│                                         │
+│  内容模块 (模块1, 模块2, ...)           │
+│  - 公司简介、投研体系、ESG投资          │ 每个内间距: 60px
+│  - 信息披露、新闻动态、投资者保护       │ 左右间距: 131.67px
+│                                         │
+│  页脚 (Footer)                          │
+│  - 多列链接导航                         │ 背景: #0B264A
+│  - 社交媒体                             │ 内边距: 90px 0 60px
+│  - 备案信息                             │
+└─────────────────────────────────────────┘</pre>
+            </div>
+            
+            <h3>间距系统</h3>
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <p class="font-medium mb-2">水平间距：</p>
+                    <ul class="list-disc list-inside space-y-1 text-gray-700 text-sm">
+                        <li><strong>页面两侧外边距：</strong> 131.67px（约占屏幕宽度的12-15%）</li>
+                        <li><strong>模块内部内边距：</strong> 60px</li>
+                        <li><strong>元素间距：</strong> 20px, 30px, 40px（递进式）</li>
+                    </ul>
+                </div>
+                <div>
+                    <p class="font-medium mb-2">垂直间距：</p>
+                    <ul class="list-disc list-inside space-y-1 text-gray-700 text-sm">
+                        <li><strong>section间距：</strong> 60px</li>
+                        <li><strong>模块间距：</strong> 40px, 80px</li>
+                        <li><strong>元素间距：</strong> 20px, 30px</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="highlight-box mt-4">
+                <p class="font-medium mb-2">特点：</p>
+                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                    <li>采用<strong>对称的页面边距</strong>，实现内容居中</li>
+                    <li>左右对称，视觉平衡</li>
+                    <li>足量的负空间提升整体品质感</li>
+                </ul>
+            </div>
+            
+            <h3>容器设计</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>区域类型</th>
+                        <th>宽度</th>
+                        <th>背景</th>
+                        <th>边框</th>
+                        <th>圆角</th>
+                        <th>投影</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>主容器</td>
+                        <td>100%</td>
+                        <td>变量</td>
+                        <td>无</td>
+                        <td>0px</td>
+                        <td>无</td>
+                    </tr>
+                    <tr>
+                        <td>卡片</td>
+                        <td>100%</td>
+                        <td>白色/浅灰</td>
+                        <td>无</td>
+                        <td>0px</td>
+                        <td>无</td>
+                    </tr>
+                    <tr>
+                        <td>按钮</td>
+                        <td>自适应</td>
+                        <td>实色</td>
+                        <td>无</td>
+                        <td>8px</td>
+                        <td>无</td>
+                    </tr>
+                    <tr>
+                        <td>输入框</td>
+                        <td>100%</td>
+                        <td>白色</td>
+                        <td>1px solid #DDD</td>
+                        <td>4px</td>
+                        <td>无</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="highlight-box">
+                <p class="font-medium mb-2">特点：</p>
+                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                    <li>采用<strong>扁平设计</strong>，无任何投影效果</li>
+                    <li>使用<strong>纯色背景</strong>区分内容层次</li>
+                    <li><strong>直角或极小圆角</strong>，体现现代感</li>
+                </ul>
+            </div>
+
+            <h2>A.4 视觉元素分析</h2>
+            
+            <h3>按钮设计</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <p class="font-medium mb-3">主要按钮（CTA）</p>
+                    <button class="btn-primary mb-3">主要按钮</button>
+                    <pre class="text-xs"><code>背景颜色: #E72521 (红色)
+文字颜色: #FFFFFF (白色)
+边框圆角: 8px
+字号: 16px
+字重: 400
+内边距: 12px 24px
+hover: 略深的红色</code></pre>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <p class="font-medium mb-3">次要按钮</p>
+                    <button class="btn-secondary mb-3">次要按钮</button>
+                    <pre class="text-xs"><code>背景颜色: #004098 (深蓝)
+文字颜色: #FFFFFF (白色)
+边框圆角: 8px
+字号: 16px
+字重: 400</code></pre>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                    <p class="font-medium mb-3">文本链接</p>
+                    <a href="#" class="link-text block mb-3">文本链接示例</a>
+                    <pre class="text-xs"><code>背景颜色: 透明
+文字颜色: #004098 (深蓝)
+边框圆角: 0px (直角)
+字号: 14px-16px
+下划线: 无（hover时可能出现）</code></pre>
+                </div>
+            </div>
+            
+            <h3>图标风格</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>图标类型</th>
+                        <th>风格</th>
+                        <th>尺寸</th>
+                        <th>颜色</th>
+                        <th>应用</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>导航图标</td>
+                        <td>简单线条</td>
+                        <td>16×16px - 24×24px</td>
+                        <td>#FFFFFF (导航) / #004098 (内容)</td>
+                        <td>菜单、搜索、功能</td>
+                    </tr>
+                    <tr>
+                        <td>品牌LOGO</td>
+                        <td>彩色</td>
+                        <td>121×88px</td>
+                        <td>多色</td>
+                        <td>页头、页脚</td>
+                    </tr>
+                    <tr>
+                        <td>三角形装饰</td>
+                        <td>纯色</td>
+                        <td>8×8px - 16×16px</td>
+                        <td>#FFFFFF / #004098</td>
+                        <td>导航指示、装饰</td>
+                    </tr>
+                    <tr>
+                        <td>下载图标</td>
+                        <td>简单线条</td>
+                        <td>48×48px</td>
+                        <td>与按钮配色一致</td>
+                        <td>App推广</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="highlight-box">
+                <p class="font-medium mb-2">特点：</p>
+                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                    <li><strong>线条型图标</strong>为主，简洁专业</li>
+                    <li><strong>彩色LOGO</strong>体现品牌特色</li>
+                    <li><strong>大量使用白色图标</strong>覆盖在深色背景上，形成对比</li>
+                </ul>
+            </div>
+            
+            <h3>卡片设计</h3>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+                <p class="font-medium mb-2">内容卡片：</p>
+                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                    <li>背景：<code>#FFFFFF</code> 或 <code>#EFF4F9</code>（浅灰蓝）</li>
+                    <li>边框：无边框</li>
+                    <li>圆角：0px（方形）或 4px（微圆角）</li>
+                    <li>投影：无投影（扁平设计）</li>
+                    <li>分隔：使用颜色变化和间距区分</li>
+                </ul>
+            </div>
+            
+            <div class="highlight-box">
+                <p class="font-medium mb-2">特点：</p>
+                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                    <li>完全扁平化，无任何深度效果</li>
+                    <li>使用纯色和间距实现视觉分层</li>
+                    <li>卡片之间靠间距而非边框来分割</li>
+                </ul>
+            </div>
+            
+            <h3>表单元素</h3>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <pre><code>输入框:
+  背景: #FFFFFF
+  边框: 1px solid #E0E0E0 (估计)
+  圆角: 4px
+  高度: 36-40px
+  
+选择框:
+  样式: 标准系统风格
+  边框: 1px solid
+  背景: #FFFFFF
+  
+标签:
+  字号: 14px
+  颜色: #333333
+  字重: 500</code></pre>
+            </div>
+
+            <h2>A.5 设计系统总结</h2>
+            
+            <h3>颜色系统速查表</h3>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+                <pre><code>┌─────────────────────────────────────────────────┐
+│ 品牌色 (Brand Colors)                           │
+├─────────────────────────────────────────────────┤
+│ 主红色    #E72521   rgb(231, 37, 33)           │
+│ 企业蓝    #004098   rgb(0, 64, 152)            │
+│ 深墨蓝    #0B264A   rgb(11, 38, 74)            │
+└─────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────┐
+│ 中性色 (Neutral Colors)                         │
+├─────────────────────────────────────────────────┤
+│ 纯白      #FFFFFF   rgb(255, 255, 255)         │
+│ 深灰-标题 #333333   rgb(51, 51, 51)            │
+│ 浅灰-正文 #222222   rgb(34, 34, 34)            │
+│ 中灰-辅助 #888888   rgb(136, 136, 136)         │
+│ 浅背景灰  #EFF4F9   rgb(239, 244, 249)         │
+│ 极浅蓝    #E5F8FD   rgb(229, 248, 253)         │
+└─────────────────────────────────────────────────┘</code></pre>
+            </div>
+            
+            <h3>字体系统速查表</h3>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+                <pre><code>标题层级 (Heading Hierarchy):
+  H1: 28px | 500 | #FFFFFF
+  H2: 30px | 500 | #333333
+  H3: 24px | 500 | #333333
+  
+内容文本 (Body Text):
+  正文:   18px | 400 | #222222
+  小文本: 14px | 400 | #888888
+  
+按钮文本 (Button Text):
+  主按钮: 16px | 400 | #FFFFFF
+  次按钮: 14px | 400 | #FFFFFF
+  
+系统字体栈 (优先级):
+  PingFang SC > Microsoft YaHei > 
+  system-ui > Roboto > Helvetica > Arial</code></pre>
+            </div>
+            
+            <h3>间距系统速查表</h3>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+                <pre><code>水平间距 (Horizontal):
+  页面边距:   131.67px
+  模块内补:   60px
+  元素间距:   20px, 30px, 40px
+  
+垂直间距 (Vertical):
+  区域间距:   60px, 80px
+  元素间距:   20px, 30px, 40px
+  标题下边距: 18.76px - 20px
+  
+圆角规范 (Border Radius):
+  按钮:   8px
+  输入框: 4px
+  卡片:   0px - 4px (主要0px)</code></pre>
+            </div>
+            
+            <h3>按钮规范</h3>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+                <pre><code>主要按钮 (Primary Button):
+  背景: #E72521
+  文字: #FFFFFF (16px)
+  圆角: 8px
+  高度: 48px
+  内边距: 12px 24px
+  
+次要按钮 (Secondary Button):
+  背景: #004098
+  文字: #FFFFFF (16px)
+  圆角: 8px
+  高度: 48px
+  内边距: 12px 24px
+  
+文本链接 (Text Link):
+  背景: transparent
+  文字: #004098 (14px-16px)
+  圆角: 0px
+  下划线: 无 (hover可加)</code></pre>
+            </div>
+
+            <h2>A.6 视觉设计特色总结</h2>
+            
+            <h3>设计风格特征</h3>
+            <div class="space-y-3 mb-6">
+                <div class="check-item">
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <p class="font-medium">扁平化设计</p>
+                        <p class="text-gray-600 text-sm">无投影、无渐变、纯色构成 - 现代、清爽、专业</p>
+                    </div>
+                </div>
+                <div class="check-item">
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <p class="font-medium">高对比度</p>
+                        <p class="text-gray-600 text-sm">深色文本 vs 浅色背景，红色按钮 vs 蓝色链接 - 确保可读性和视觉导向</p>
+                    </div>
+                </div>
+                <div class="check-item">
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <p class="font-medium">冷色调主导</p>
+                        <p class="text-gray-600 text-sm">蓝色系是主要色调 - 营造专业、值得信赖的感觉，适合金融行业特征</p>
+                    </div>
+                </div>
+                <div class="check-item">
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <p class="font-medium">充足的负空间</p>
+                        <p class="text-gray-600 text-sm">页面边距宽裕（131.67px），模块间距大（60px）- 提升整体品质感</p>
+                    </div>
+                </div>
+                <div class="check-item">
+                    <i class="fas fa-check-circle"></i>
+                    <div>
+                        <p class="font-medium">系统化设计</p>
+                        <p class="text-gray-600 text-sm">统一的字体、颜色、间距 - 遵循设计规范，保证视觉一致性</p>
+                    </div>
+                </div>
+            </div>
+            
+            <h3>用户体验考量</h3>
+            <div class="highlight-box">
+                <ul class="list-disc list-inside space-y-2 text-gray-700">
+                    <li><strong>清晰的信息层级</strong>：通过字号、颜色、位置引导视线</li>
+                    <li><strong>易识别的操作</strong>：红色按钮一眼即明白是主操作</li>
+                    <li><strong>响应式友好</strong>：大间距、大文字便于各设备浏览</li>
+                    <li><strong>快速加载</strong>：避免复杂效果，使用简单几何形状</li>
+                    <li><strong>易于导航</strong>：固定导航栏，多层级菜单结构清晰</li>
+                </ul>
+            </div>
+
+            <h2>A.7 可用性建议</h2>
+            
+            <h3>针对设计师</h3>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+                <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                    <li><strong>严格遵循颜色规范</strong>：使用规定的品牌色，避免自行调配</li>
+                    <li><strong>保持字体一致</strong>：所有中文内容使用系统字体栈</li>
+                    <li><strong>间距要规范</strong>：使用60px、40px、20px等标准间距</li>
+                    <li><strong>按钮要明显</strong>：红色用于主操作，蓝色用于次操作</li>
+                    <li><strong>图片要统一</strong>：色调处理应保持一致性</li>
+                </ol>
+            </div>
+            
+            <h3>针对开发者</h3>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+                <ol class="list-decimal list-inside space-y-2 text-gray-700">
+                    <li><strong>使用CSS变量</strong>存储品牌色，便于全局修改</li>
+                    <li><strong>建立可复用的组件库</strong>（按钮、卡片、表单等）</li>
+                    <li><strong>优先使用系统字体</strong>，减少外部字体加载</li>
+                    <li><strong>验证色彩对比度</strong>，确保WCAG可访问性标准</li>
+                    <li><strong>响应式设计</strong>：保持各设备上的间距比例</li>
+                </ol>
+            </div>
+
+            <h2>A.8 参考代码示例</h2>
+            
+            <h3>CSS变量示例</h3>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+                <pre><code>:root {
+  /* 品牌色 */
+  --color-brand-red: #E72521;
+  --color-brand-blue: #004098;
+  --color-dark-blue: #0B264A;
+  
+  /* 中性色 */
+  --color-white: #FFFFFF;
+  --color-dark-gray: #333333;
+  --color-text: #222222;
+  --color-gray: #888888;
+  
+  /* 字体 */
+  --font-family: -apple-system, "system-ui", "Segoe UI", system-ui, Roboto, Ubuntu, Cantarell, "Noto Sans", sans-serif, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Helvetica, Arial;
+  
+  /* 间距 */
+  --spacing-xs: 20px;
+  --spacing-sm: 30px;
+  --spacing-md: 40px;
+  --spacing-lg: 60px;
+  --spacing-xl: 80px;
+  --spacing-page: 131.67px;
+}</code></pre>
+            </div>
+            
+            <h3>按钮样式示例</h3>
+            <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+                <pre><code>/* 主要按钮 */
+.btn-primary {
+  background-color: var(--color-brand-red);
+  color: var(--color-white);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #D41F1B; /* 略深的红色 */
+}
+
+/* 次要按钮 */
+.btn-secondary {
+  background-color: var(--color-brand-blue);
+  color: var(--color-white);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+}
+
+/* 文本链接 */
+.link-text {
+  color: var(--color-brand-blue);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.link-text:hover {
+  text-decoration: underline;
+}</code></pre>
+            </div>
+
+            <div class="highlight-box mt-8">
+                <h3 class="font-medium mb-3">附录总结</h3>
+                <p class="text-gray-700 mb-3">本技术方案报告的设计规范参考南方基金官网，遵循<strong>现代、专业、信任</strong>的设计哲学，通过：</p>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="check-item">
+                        <i class="fas fa-palette"></i>
+                        <span>🎨 <strong>品牌色的巧妙运用</strong>（红蓝搭配）</span>
+                    </div>
+                    <div class="check-item">
+                        <i class="fas fa-font"></i>
+                        <span>📝 <strong>系统化的字体层级</strong></span>
+                    </div>
+                    <div class="check-item">
+                        <i class="fas fa-ruler-combined"></i>
+                        <span>📐 <strong>规范的间距系统</strong></span>
+                    </div>
+                    <div class="check-item">
+                        <i class="fas fa-square"></i>
+                        <span>🔳 <strong>扁平化的视觉风格</strong></span>
+                    </div>
+                </div>
+                <p class="text-gray-700 mt-3">成功塑造了一个既稳重又充满活力、既专业又易用的技术文档形象。这套设计系统可作为金融科技类技术文档的优质参考案例。</p>
+            </div>
+        </section>
+
+        <!-- 页脚 -->
+        <footer class="mt-16 pt-8 border-t border-gray-200 text-center text-gray-500 text-sm">
+            <p><strong>报告生成时间：</strong> 2026年4月13日</p>
+            <p><strong>参考来源：</strong> <a href="https://www.nffund.com/" class="link-text">https://www.nffund.com/</a></p>
+            <p><strong>设计深度：</strong> 设计系统、配色方案、字体规范、布局结构、组件设计</p>
+            <p class="mt-4 text-gray-400">© 2026 技术方案报告 - 遵循金融科技设计规范</p>
+        </footer>
+    </main>
+
+    <script>
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // 当前章节高亮
+        const sections = document.querySelectorAll('section[id]');
+        const tocItems = document.querySelectorAll('.toc-item');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            tocItems.forEach(item => {
+                item.classList.remove('text-red-600', 'font-medium');
+                if (item.getAttribute('href') === '#' + current) {
+                    item.classList.add('text-red-600', 'font-medium');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

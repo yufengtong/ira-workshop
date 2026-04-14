@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>测试管理平台</title>
+  <!-- 引入Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+
+  <!-- 配置Tailwind自定义主题 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#1E40AF', // 深蓝主色调，传达专业和可靠性
+            secondary: '#3B82F6',
+            accent: '#F97316',
+            success: '#10B981',
+            warning: '#FBBF24',
+            danger: '#EF4444',
+            dark: '#1E293B',
+            light: '#F8FAFC',
+            'primary-900': 'rgba(30, 64, 175, 0.9)', // 90%透明度的primary
+            'primary-100': 'rgba(30, 64, 175, 0.1)'  // 10%透明度的primary，用于nav-active
+          },
+          fontFamily: {
+            inter: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      }
+    }
+  </script>
+
+  <!-- 自定义工具类 -->
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .content-auto {
+        content-visibility: auto;
+      }
+      .sidebar-shadow {
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.05);
+      }
+      .nav-active {
+        @apply bg-primary-100 text-primary border-l-4 border-primary;
+      }
+      .transition-all-300 {
+        transition: all 0.3s ease;
+      }
+      
+      /* 定义斜杠语法透明度类的别名，解决兼容性问题 */
+      .bg-primary\/10 {
+        background-color: rgba(30, 64, 175, 0.1);
+      }
+      .bg-primary\/90 {
+        background-color: rgba(30, 64, 175, 0.9);
+      }
+    }
+  </style>
+
+  <style>
+    /* 动画效果 */
+    .slide-in {
+      animation: slideIn 0.3s ease forwards;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateX(-100%); }
+      to { transform: translateX(0); }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .rotate-icon {
+      transform: rotate(90deg);
+      transition: transform 0.3s ease;
+    }
+
+    .scale-in {
+      animation: scaleIn 0.2s ease forwards;
+    }
+
+    @keyframes scaleIn {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    /* 平滑滚动 */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* 滚动条样式 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #94a3b8;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+  </style>
+</head>
+
+<body class="font-inter bg-gray-50 text-dark overflow-x-hidden">
+  <!-- 顶部导航栏 -->
+  <header id="top-nav" class="fixed top-0 left-0 right-0 bg-white shadow-sm z-40 transition-all duration-300 h-16">
+    <div class="container mx-auto px-4">
+      <div class="flex items-center justify-between h-full">
+        <!-- Logo和移动端菜单按钮 -->
+        <div class="flex items-center">
+          <!-- 移动端侧边栏切换按钮 -->
+          <button id="sidebar-toggle" class="md:hidden p-2 rounded-md text-gray-600 hover:bg-gray-100 transition-colors mr-2">
+            <i class="fa fa-bars"></i>
+          </button>
+
+          <!-- Logo -->
+          <a href="#" class="flex items-center space-x-2">
+            <div class="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
+              <i class="fa fa-flask text-white text-lg"></i>
+            </div>
+            <span class="text-lg font-bold hidden sm:block">TestManager</span>
+          </a>
+        </div>
+
+        <!-- 搜索框 -->
+        <div class="hidden md:flex items-center flex-1 max-w-md mx-8">
+          <div class="relative w-full">
+            <input type="text" placeholder="搜索测试用例、环境或报告..."
+                  class="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all text-sm">
+            <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          </div>
+        </div>
+
+        <!-- 右侧操作区 -->
+        <div class="flex items-center space-x-1 sm:space-x-3">
+          <button class="p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors relative">
+            <i class="fa fa-bell"></i>
+            <span class="absolute top-1 right-1 w-2 h-2 bg-danger rounded-full"></span>
+          </button>
+
+          <button class="p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors">
+            <i class="fa fa-question-circle"></i>
+          </button>
+
+          <!-- 用户头像 -->
+          <div class="relative group">
+            <button class="flex items-center space-x-2">
+              <img src="{{ url_for('static', filename='img/ameng.png') }}" alt="用户头像" class="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm">
+              <span class="text-sm font-medium hidden sm:block">测试</span>
+              <i class="fa fa-chevron-down text-xs text-gray-500 hidden sm:block"></i>
+            </button>
+            <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 scale-in">
+              <div class="py-2">
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">个人中心</a>
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">我的任务</a>
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">偏好设置</a>
+                <div class="border-t border-gray-100 my-1"></div>
+                <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">退出登录</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 侧边导航栏 -->
+  <aside id="sidebar" class="fixed top-16 left-0 bottom-0 w-64 bg-white sidebar-shadow transform -translate-x-full md:translate-x-0 transition-transform duration-300 z-30 overflow-y-auto">
+    <nav class="p-4">
+      <!-- 主导航菜单 -->
+      <div class="mb-6">
+        <h3 class="text-xs uppercase text-gray-500 font-semibold tracking-wider mb-3 px-3">主菜单</h3>
+        <ul class="space-y-1">
+          <!-- 首页 -->
+          <li>
+            <a href="#dashboard" class="flex items-center px-3 py-3 text-sm font-medium rounded-md nav-active">
+              <i class="fa fa-tachometer w-5 h-5 mr-3"></i>
+              首页
+            </a>
+          </li>
+
+          <!-- 工具箱 -->
+          <li class="relative">
+            <button class="w-full flex items-center justify-between px-3 py-3 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 transition-colors group">
+              <div class="flex items-center">
+                <i class="fa fa-wrench w-5 h-5 mr-3"></i>
+                工具箱
+              </div>
+              <i class="fa fa-angle-right text-xs transition-transform duration-300"></i>
+            </button>
+            <ul class="hidden pl-10 mt-1 space-y-1 border-l-2 border-gray-100">
+              <li><a href="/get_my_website" target="_blank" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">办公网址导航</a></li>
+              <li><a href="#" class="load-content block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded" data-url="/new_test_task_page">数据管家与TB任务管理</a></li>
+            </ul>
+          </li>
+
+          <!-- 环境管理 -->
+          <li class="relative">
+            <button class="w-full flex items-center justify-between px-3 py-3 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 transition-colors group">
+              <div class="flex items-center">
+                <i class="fa fa-server w-5 h-5 mr-3"></i>
+                环境管理
+              </div>
+              <i class="fa fa-angle-right text-xs transition-transform duration-300"></i>
+            </button>
+            <ul class="hidden pl-10 mt-1 space-y-1 border-l-2 border-gray-100">
+              <li><a href="#" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">测试环境</a></li>
+              <li><a href="#" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">开发环境</a></li>
+              <li><a href="#" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">预生产环境</a></li>
+            </ul>
+          </li>
+
+          <!-- 自动化测试 -->
+          <li class="relative">
+            <button class="w-full flex items-center justify-between px-3 py-3 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 transition-colors group">
+              <div class="flex items-center">
+                <i class="fa fa-cogs w-5 h-5 mr-3"></i>
+                自动化测试
+              </div>
+              <i class="fa fa-angle-right text-xs transition-transform duration-300"></i>
+            </button>
+            <ul class="hidden pl-10 mt-1 space-y-1 border-l-2 border-gray-100">
+              <li><a href="#" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">用例管理</a></li>
+              <li><a href="#" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">执行计划</a></li>
+              <li><a href="#" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">测试报告</a></li>
+              <li><a href="#" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">脚本管理</a></li>
+            </ul>
+          </li>
+
+          <!-- 压力测试 -->
+          <li class="relative">
+            <button class="w-full flex items-center justify-between px-3 py-3 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 transition-colors group">
+              <div class="flex items-center">
+                <i class="fa fa-tasks w-5 h-5 mr-3"></i>
+                压力测试
+              </div>
+              <i class="fa fa-angle-right text-xs transition-transform duration-300"></i>
+            </button>
+            <ul class="hidden pl-10 mt-1 space-y-1 border-l-2 border-gray-100">
+              <li><a href="#" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">测试场景</a></li>
+              <li><a href="#" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">性能指标</a></li>
+              <li><a href="#" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">执行结果</a></li>
+              <li><a href="#" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">对比分析</a></li>
+            </ul>
+          </li>
+
+          <!-- 质量度量 -->
+          <li class="relative">
+            <button class="w-full flex items-center justify-between px-3 py-3 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 transition-colors group">
+              <div class="flex items-center">
+                <i class="fa fa-bar-chart w-5 h-5 mr-3"></i>
+                质量度量
+              </div>
+              <i class="fa fa-angle-right text-xs transition-transform duration-300"></i>
+            </button>
+            <ul class="hidden pl-10 mt-1 space-y-1 border-l-2 border-gray-100">
+              <li><a href="#" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">缺陷分析</a></li>
+              <li><a href="#" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">测试覆盖率</a></li>
+              <li><a href="#" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">质量趋势</a></li>
+              <li><a href="#" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">自定义报表</a></li>
+            </ul>
+          </li>
+
+          <!-- 系统设置 -->
+          <li class="relative">
+            <button class="w-full flex items-center justify-between px-3 py-3 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 transition-colors group">
+              <div class="flex items-center">
+                <i class="fa fa-cog w-5 h-5 mr-3"></i>
+                系统设置
+              </div>
+              <i class="fa fa-angle-right text-xs transition-transform duration-300"></i>
+            </button>
+            <ul class="hidden pl-10 mt-1 space-y-1 border-l-2 border-gray-100">
+              <li><a href="#" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">用户管理</a></li>
+              <li><a href="#" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">角色权限</a></li>
+              <li><a href="#" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">系统参数</a></li>
+              <li><a href="#" class="block py-2 text-sm text-gray-600 hover:text-primary hover:bg-gray-50 px-2 rounded">数据备份</a></li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 快速访问 -->
+      <div class="mb-6">
+        <h3 class="text-xs uppercase text-gray-500 font-semibold tracking-wider mb-3 px-3">快速访问</h3>
+        <ul class="space-y-1">
+          <li>
+            <a href="#" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 transition-colors">
+              <i class="fa fa-clock-o w-5 h-5 mr-3 text-gray-400"></i>
+              最近测试报告
+            </a>
+          </li>
+          <li>
+            <a href="#" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 transition-colors">
+              <i class="fa fa-flag w-5 h-5 mr-3 text-gray-400"></i>
+              高优先级缺陷
+            </a>
+          </li>
+          <li>
+            <a href="#" class="flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 transition-colors">
+              <i class="fa fa-calendar w-5 h-5 mr-3 text-gray-400"></i>
+              本周测试计划
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- 系统信息 -->
+      <div class="p-4 bg-gray-50 rounded-lg">
+        <div class="flex items-center mb-3">
+          <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-3">
+            <i class="fa fa-check text-success"></i>
+          </div>
+          <div>
+            <p class="text-sm font-medium">系统状态正常</p>
+            <p class="text-xs text-gray-500">上次更新: 今天 08:30</p>
+          </div>
+        </div>
+        <a href="#" class="text-xs text-primary hover:text-primary/80 transition-colors">查看系统日志 →</a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- 遮罩层 - 移动端侧边栏打开时显示 -->
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden md:hidden fade-in"></div>
+
+  <!-- 主内容区 -->
+  <main class="pt-16 md:pl-64 transition-all duration-300 min-h-screen">
+    <div class="container mx-auto px-4 py-6">
+      <!-- 页面标题和操作区 -->
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+        <div>
+          <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold">测试管理仪表盘</h1>
+          <p class="text-gray-500 mt-1">欢迎回来，张测试。这是您的测试概览。</p>
+        </div>
+        <div class="flex space-x-3 mt-4 sm:mt-0">
+          <button class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            <i class="fa fa-download mr-1"></i> 导出报告
+          </button>
+          <button class="px-4 py-2 bg-primary text-white rounded-lg text-sm font-medium hover:bg-primary-900 transition-colors shadow-sm">
+            <i class="fa fa-plus mr-1"></i> 新建测试计划
+          </button>
+        </div>
+      </div>
+
+      <!-- 统计卡片 -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-6">
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-gray-500 text-sm">自动化测试用例</p>
+              <h3 class="text-2xl font-bold mt-1">1,284</h3>
+              <p class="text-success text-xs mt-2 flex items-center">
+                <i class="fa fa-arrow-up mr-1"></i> 12% 较上周
+              </p>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
+              <i class="fa fa-cogs text-primary"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-gray-500 text-sm">压力测试场景</p>
+              <h3 class="text-2xl font-bold mt-1">36</h3>
+              <p class="text-success text-xs mt-2 flex items-center">
+                <i class="fa fa-arrow-up mr-1"></i> 5% 较上周
+              </p>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
+              <i class="fa fa-tasks text-purple-600"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-gray-500 text-sm">已发现缺陷</p>
+              <h3 class="text-2xl font-bold mt-1">87</h3>
+              <p class="text-danger text-xs mt-2 flex items-center">
+                <i class="fa fa-arrow-up mr-1"></i> 8% 较上周
+              </p>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center">
+              <i class="fa fa-bug text-red-600"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 hover:shadow-md transition-shadow">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-gray-500 text-sm">系统可用性</p>
+              <h3 class="text-2xl font-bold mt-1">99.8%</h3>
+              <p class="text-success text-xs mt-2 flex items-center">
+                <i class="fa fa-arrow-up mr-1"></i> 0.2% 较上周
+              </p>
+            </div>
+            <div class="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+              <i class="fa fa-check-circle text-green-600"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 图表和列表区域 -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 lg:col-span-2">
+          <div class="flex justify-between items-center mb-5">
+            <h3 class="font-semibold">测试执行趋势</h3>
+            <div class="flex space-x-2">
+              <button class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">本周</button>
+              <button class="text-xs px-3 py-1 rounded-full bg-primary-100 text-primary">本月</button>
+              <button class="text-xs px-3 py-1 rounded-full bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">全年</button>
+            </div>
+          </div>
+          <div class="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+            <p class="text-gray-400">测试执行趋势图表</p>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+          <div class="flex justify-between items-center mb-5">
+            <h3 class="font-semibold">环境状态</h3>
+            <button class="text-primary text-sm hover:underline">查看全部</button>
+          </div>
+          <div class="space-y-4">
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-sm font-medium">开发环境</span>
+                <span class="text-xs bg-green-100 text-success px-2 py-0.5 rounded-full">运行中</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-success h-2 rounded-full" style="width: 98%"></div>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">CPU: 32% 内存: 65%</p>
+            </div>
+
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-sm font-medium">测试环境</span>
+                <span class="text-xs bg-green-100 text-success px-2 py-0.5 rounded-full">运行中</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-success h-2 rounded-full" style="width: 85%"></div>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">CPU: 45% 内存: 72%</p>
+            </div>
+
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="text-sm font-medium">预生产环境</span>
+                <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full">维护中</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-yellow-500 h-2 rounded-full" style="width: 40%"></div>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">CPU: 28% 内存: 35%</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 最近活动 -->
+        <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100 lg:col-span-3">
+          <div class="flex justify-between items-center mb-5">
+            <h3 class="font-semibold">最近活动</h3>
+            <button class="text-primary text-sm hover:underline">查看历史</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+              <thead>
+                <tr>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">活动类型</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">名称</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">执行者</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                  <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">时间</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="text-xs bg-blue-100 text-primary px-2 py-1 rounded-full">自动化测试</span>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm">API接口测试套件V2.3</td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <img class="h-6 w-6 rounded-full" src="{{ url_for('static', filename='img/ameng.png') }}" alt="">
+                      <span class="ml-2 text-sm">李工程师</span>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="text-xs bg-green-100 text-success px-2 py-1 rounded-full">已完成</span>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">今天 09:45</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full">压力测试</span>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm">登录接口压力测试</td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <img class="h-6 w-6 rounded-full" src="{{ url_for('static', filename='img/ameng.png') }}" alt="">
+                      <span class="ml-2 text-sm">王测试</span>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="text-xs bg-green-100 text-success px-2 py-1 rounded-full">已完成</span>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">昨天 16:20</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">环境管理</span>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm">测试环境版本更新</td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <img class="h-6 w-6 rounded-full" src="{{ url_for('static', filename='img/ameng.png') }}" alt="">
+                      <span class="ml-2 text-sm">赵运维</span>
+                    </div>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="text-xs bg-green-100 text-success px-2 py-1 rounded-full">已完成</span>
+                  </td>
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">昨天 10:15</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-white border-t py-6 md:pl-64 transition-all duration-300 mt-8">
+    <div class="container mx-auto px-4">
+      <div class="flex flex-col md:flex-row justify-between items-center">
+        <p class="text-sm text-gray-500 mb-4 md:mb-0">© 2023 TestManager 测试管理平台. 版本 v3.5.2</p>
+        <div class="flex space-x-6">
+          <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+            <i class="fa fa-book"></i> <span class="text-xs ml-1 hidden sm:inline">帮助文档</span>
+          </a>
+          <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+            <i class="fa fa-life-ring"></i> <span class="text-xs ml-1 hidden sm:inline">技术支持</span>
+          </a>
+          <a href="#" class="text-gray-400 hover:text-primary transition-colors">
+            <i class="fa fa-file-text"></i> <span class="text-xs ml-1 hidden sm:inline">隐私政策</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    // 侧边栏切换功能
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarOverlay = document.getElementById('sidebar-overlay');
+
+    function toggleSidebar() {
+      sidebar.classList.toggle('-translate-x-full');
+      sidebarOverlay.classList.toggle('hidden');
+      document.body.classList.toggle('overflow-hidden');
+    }
+
+    sidebarToggle.addEventListener('click', toggleSidebar);
+    sidebarOverlay.addEventListener('click', toggleSidebar);
+
+    // 侧边栏子菜单展开/折叠功能
+    const submenuToggles = document.querySelectorAll('#sidebar button');
+    submenuToggles.forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        const submenu = toggle.nextElementSibling;
+        const icon = toggle.querySelector('.fa-angle-right');
+
+        // 切换子菜单显示状态
+        submenu.classList.toggle('hidden');
+
+        // 旋转箭头图标
+        if (!submenu.classList.contains('hidden')) {
+          icon.classList.add('rotate-icon');
+        } else {
+          icon.classList.remove('rotate-icon');
+        }
+      });
+    });
+
+    // 顶部导航栏滚动效果
+    const topNav = document.getElementById('top-nav');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 10) {
+        topNav.classList.add('shadow');
+      } else {
+        topNav.classList.remove('shadow');
+      }
+    });
+
+    // 导航链接激活状态切换
+    const navLinks = document.querySelectorAll('#sidebar a');
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        // 移除所有链接的激活状态
+        navLinks.forEach(l => {
+          l.classList.remove('nav-active');
+          l.classList.add('text-gray-700');
+        });
+
+        // 为当前点击的链接添加激活状态
+        link.classList.add('nav-active');
+        link.classList.remove('text-gray-700');
+      });
+    });
+  </script>
+<script src="{{ url_for('static', filename='js/content-loader.js') }}"></script>
+</body>
+</html>
