@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{PROJECT_NAME}} 技术方案报告</title>
+<style>
+  :root {
+    --primary-blue: #004098;
+    --dark-blue: #00295F;
+    --light-blue: #1A6FD5;
+    --bg-blue: #E8EFF8;
+    --border-blue: #99B8D9;
+    --accent-red: #E72521;
+    --accent-gold: #C9A96E;
+    --white: #FFFFFF;
+    --gray-100: #F0F2F5;
+    --gray-200: #E5E8ED;
+    --gray-600: #6B7280;
+    --gray-800: #2D3748;
+    --text: #1A202C;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg-blue);
+    color: var(--text);
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--white);
+    box-shadow: 0 4px 24px rgba(0,41,95,0.1);
+  }
+
+  /* ===== Page breaks for print ===== */
+  .page-break {
+    page-break-after: always;
+    border: none;
+    height: 4px;
+    background: linear-gradient(to right, transparent, var(--primary-blue), transparent);
+    margin: 48px 0;
+  }
+
+  /* ===== Section padding ===== */
+  .section { padding: 40px 56px; }
+  .section + .section { padding-top: 0; }
+
+  /* ===== Cover ===== */
+  .cover {
+    background: linear-gradient(135deg, var(--dark-blue) 0%, var(--primary-blue) 60%, var(--light-blue) 100%);
+    color: var(--white);
+    padding: 80px 56px;
+    text-align: center;
+  }
+  .cover h1 { font-size: 34px; font-weight: 700; letter-spacing: 3px; margin-bottom: 12px; color: var(--white); }
+  .cover h2 { font-size: 22px; font-weight: 500; opacity: 0.9; margin-bottom: 8px; color: var(--white); }
+  .cover h3 { font-size: 16px; font-weight: 400; opacity: 0.7; letter-spacing: 2px; margin-bottom: 40px; color: rgba(255,255,255,0.7); }
+  .cover-table { margin: 0 auto; border-collapse: collapse; }
+  .cover-table td {
+    padding: 8px 24px;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+  }
+  .cover-table td:first-child {
+    text-align: right;
+    opacity: 0.7;
+    font-weight: 500;
+    padding-right: 20px;
+  }
+  .cover-table td:last-child { text-align: left; font-weight: 600; }
+
+  /* ===== Disclaimer banner ===== */
+  .disclaimer-banner {
+    background: #FFF3CD;
+    border-left: 4px solid #FFC107;
+    padding: 14px 56px;
+    font-size: 13px;
+    color: #856404;
+    line-height: 1.7;
+  }
+
+  /* ===== Headings ===== */
+  h2.section-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--primary-blue);
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--light-blue);
+    margin-bottom: 24px;
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--dark-blue);
+    margin: 28px 0 14px;
+  }
+  h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin: 20px 0 10px;
+  }
+  p { font-size: 14.5px; color: var(--gray-800); margin-bottom: 12px; text-align: justify; }
+  ul, ol { margin: 0 0 14px 20px; font-size: 14.5px; color: var(--gray-800); }
+  li { margin-bottom: 6px; }
+  strong { color: var(--dark-blue); }
+
+  /* ===== Styled block (left border) ===== */
+  .styled-block {
+    border-left: 4px solid var(--primary-blue);
+    padding-left: 18px;
+    background: linear-gradient(to right, var(--bg-blue), transparent);
+    margin: 14px 0 20px;
+    padding-top: 14px;
+    padding-bottom: 4px;
+    border-radius: 0 6px 6px 0;
+  }
+  .styled-block.red {
+    border-left-color: var(--accent-red);
+    background: linear-gradient(to right, #FDE8E8, transparent);
+  }
+
+  /* ===== Tables ===== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-size: 13.5px;
+  }
+  thead th {
+    background: var(--primary-blue);
+    color: var(--white);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  thead th:first-child { border-radius: 6px 0 0 0; }
+  thead th:last-child { border-radius: 0 6px 0 0; }
+  tbody td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--gray-200);
+    vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: var(--gray-100); }
+  tbody tr:hover { background: #EBF0FA; }
+
+  /* ===== Meta tables (cover sub-tables) ===== */
+  .meta-table { max-width: 600px; }
+  .meta-table th { font-size: 13px; }
+  .meta-table td { font-size: 13px; padding: 7px 14px; }
+
+  /* ===== Code / Pre blocks ===== */
+  pre {
+    background: #0D1B2A;
+    color: #D4E4F7;
+    border: 1px solid var(--border-blue);
+    border-radius: 6px;
+    padding: 18px 22px;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 12.5px;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin: 16px 0 24px;
+    white-space: pre;
+  }
+
+  /* ===== Blockquote ===== */
+  blockquote {
+    border-left: 4px solid var(--accent-red);
+    background: var(--bg-blue);
+    padding: 14px 20px;
+    margin: 16px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 13.5px;
+    color: var(--gray-800);
+  }
+
+  /* ===== TOC box ===== */
+  .toc-box {
+    background: linear-gradient(to right, var(--bg-blue), var(--border-blue), var(--bg-blue));
+    padding: 24px 28px;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-blue);
+    margin: 16px 0 24px;
+  }
+  .toc-box ol { margin: 0; padding-left: 20px; }
+  .toc-box li { margin-bottom: 4px; font-size: 14px; }
+  .toc-box a { color: var(--light-blue); text-decoration: none; }
+  .toc-box a:hover { text-decoration: underline; }
+
+  /* ===== Footer ===== */
+  .page-footer {
+    background: var(--dark-blue);
+    color: rgba(255,255,255,0.5);
+    padding: 16px 56px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+  }
+
+  /* ===== Print ===== */
+  @media print {
+    body { background: #fff; }
+    .container { box-shadow: none; }
+    .page-break { page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ==================== COVER ==================== -->
+  <div class="cover">
+    <h1>{{PROJECT_NAME}}</h1>
+    <h2>技术方案报告</h2>
+    <h3>{{PROJECT_NAME_EN}}</h3>
+    <table class="cover-table">
+      <tr><td>项目名称</td><td>{{PROJECT_NAME}}</td></tr>
+      <tr><td>文档编号</td><td>{{DOC_ID}}</td></tr>
+      <tr><td>版　　本</td><td>{{VERSION}}</td></tr>
+      <tr><td>密　　级</td><td>{{CLASSIFICATION}}</td></tr>
+      <tr><td>编制单位</td><td>{{DEPARTMENT}}</td></tr>
+      <tr><td>编制日期</td><td>{{DATE}}</td></tr>
+    </table>
+  </div>
+
+  <!-- 如果是金融/投资相关项目，添加免责声明横幅 -->
+  <div class="disclaimer-banner">
+    ⚠️ <strong>免责声明</strong>：{{DISCLAIMER_TEXT}}
+  </div>
+
+  <!-- ==================== META SECTION ==================== -->
+  <div class="section">
+    <h2 class="section-title">版本记录</h2>
+    <table class="meta-table">
+      <thead><tr><th>版本号</th><th>修订日期</th><th>修订人</th><th>修订内容说明</th></tr></thead>
+      <tbody>
+        <tr><td>{{VERSION}}</td><td>{{DATE}}</td><td>{{DEPARTMENT}}</td><td>初版发布，完成整体技术方案设计</td></tr>
+        <tr><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="section-title">审批记录</h2>
+    <table class="meta-table">
+      <thead><tr><th>角色</th><th>姓名</th><th>签字</th><th>日期</th></tr></thead>
+      <tbody>
+        <tr><td>编写</td><td>________</td><td></td><td>________</td></tr>
+        <tr><td>审核</td><td>________</td><td></td><td>________</td></tr>
+        <tr><td>批准</td><td>________</td><td></td><td>________</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="section-title">文档分发</h2>
+    <table class="meta-table">
+      <thead><tr><th>序号</th><th>接收部门</th><th>接收人</th><th>份数</th></tr></thead>
+      <tbody>
+        <!-- 根据项目实际情况填写分发列表 -->
+        <tr><td>1</td><td>{{DEPT_1}}</td><td>________</td><td>1</td></tr>
+        <tr><td>2</td><td>{{DEPT_2}}</td><td>________</td><td>1</td></tr>
+        <tr><td>3</td><td>{{DEPT_3}}</td><td>________</td><td>1</td></tr>
+        <tr><td>4</td><td>{{DEPT_4}}</td><td>________</td><td>1</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="section-title">目录</h2>
+    <div class="toc-box">
+      <ol>
+        <!-- 根据实际章节生成目录 -->
+        <li><a href="#sec1">{{CHAPTER_1_TITLE}}</a></li>
+        <li><a href="#sec2">{{CHAPTER_2_TITLE}}</a></li>
+        <li><a href="#sec3">{{CHAPTER_3_TITLE}}</a></li>
+        <li><a href="#sec4">{{CHAPTER_4_TITLE}}</a></li>
+        <li><a href="#sec5">{{CHAPTER_5_TITLE}}</a></li>
+        <li><a href="#sec6">{{CHAPTER_6_TITLE}}</a></li>
+        <li><a href="#sec7">{{CHAPTER_7_TITLE}}</a></li>
+        <li><a href="#sec8">{{CHAPTER_8_TITLE}}</a></li>
+        <li><a href="#sec9">{{CHAPTER_9_TITLE}}</a></li>
+        <li><a href="#sec10">{{CHAPTER_10_TITLE}}</a></li>
+      </ol>
+    </div>
+  </div>
+
+  <hr class="page-break">
+
+  <!-- ==================== PAGE 2: 章节 1-2 ==================== -->
+  <div class="section" id="sec1">
+    <h2 class="section-title">1. {{CHAPTER_1_TITLE}}</h2>
+    <div class="styled-block">
+      <h3>1.1 {{SUB_SECTION_TITLE}}</h3>
+      <p>{{CONTENT}}</p>
+      <ul>
+        <li><strong>{{POINT_1}}</strong>：{{DESCRIPTION_1}}</li>
+        <li><strong>{{POINT_2}}</strong>：{{DESCRIPTION_2}}</li>
+      </ul>
+    </div>
+    <!-- 需求表格示例 -->
+    <table>
+      <thead><tr><th>需求类别</th><th>具体需求</th></tr></thead>
+      <tbody>
+        <tr><td>{{CATEGORY}}</td><td>{{REQUIREMENT}}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section" id="sec2">
+    <h2 class="section-title">2. {{CHAPTER_2_TITLE}}</h2>
+    <div class="styled-block">
+      <h3>2.1 总体目标</h3>
+      <p>{{OVERALL_GOAL}}</p>
+    </div>
+    <!-- 目标框（ASCII 框图） -->
+<pre>{{GOAL_ASCII_BOX}}</pre>
+    <!-- 功能树 -->
+    <h3>2.x 系统功能树</h3>
+<pre>{{FUNCTION_TREE}}</pre>
+  </div>
+
+  <hr class="page-break">
+
+  <!-- ==================== PAGE 3: 章节 3（技术架构） ==================== -->
+  <div class="section" id="sec3">
+    <h2 class="section-title">3. {{CHAPTER_3_TITLE}}</h2>
+    <div class="styled-block">
+      <h3>3.1 技术选型</h3>
+    </div>
+    <!-- 技术选型表 -->
+    <table>
+      <thead><tr><th>技术项</th><th>选型方案</th><th>选型理由</th></tr></thead>
+      <tbody>
+        <tr><td>{{TECH_ITEM}}</td><td>{{TECH_CHOICE}}</td><td>{{TECH_REASON}}</td></tr>
+      </tbody>
+    </table>
+
+    <h3>3.2 系统架构</h3>
+    <h4>3.2.1 整体架构图</h4>
+<pre>{{ARCHITECTURE_DIAGRAM}}</pre>
+
+    <h4>3.2.2 分层架构说明</h4>
+    <table>
+      <thead><tr><th>层级</th><th>组件</th><th>职责说明</th></tr></thead>
+      <tbody>
+        <tr><td>{{LAYER}}</td><td>{{COMPONENT}}</td><td>{{RESPONSIBILITY}}</td></tr>
+      </tbody>
+    </table>
+
+    <h3>3.3 数据流设计</h3>
+<pre>{{DATA_FLOW}}</pre>
+  </div>
+
+  <hr class="page-break">
+
+  <!-- ==================== PAGE 4: 章节 4-5 ==================== -->
+  <div class="section" id="sec4">
+    <h2 class="section-title">4. {{CHAPTER_4_TITLE}}</h2>
+    <div class="styled-block">
+      <h3>4.1 {{MODULE_1}}</h3>
+      <p>{{MODULE_1_DESC}}</p>
+    </div>
+    <table>
+      <thead><tr><th>功能模块</th><th>功能描述</th></tr></thead>
+      <tbody>
+        <tr><td>{{FUNC}}</td><td>{{FUNC_DESC}}</td></tr>
+      </tbody>
+    </table>
+    <!-- ASCII 系统图示例 -->
+<pre>{{SYSTEM_DIAGRAM}}</pre>
+  </div>
+
+  <div class="section" id="sec5">
+    <h2 class="section-title">5. {{CHAPTER_5_TITLE}}</h2>
+    <!-- 红色 styled-block 用于重要警告章节 -->
+    <div class="styled-block red">
+      <h3>5.1 设计原则</h3>
+      <ul>
+        <li><strong>{{PRINCIPLE_1}}</strong>：{{PRINCIPLE_1_DESC}}</li>
+      </ul>
+    </div>
+    <table>
+      <thead><tr><th>{{COL1}}</th><th>{{COL2}}</th><th>{{COL3}}</th></tr></thead>
+      <tbody>
+        <tr><td>{{VAL1}}</td><td>{{VAL2}}</td><td>{{VAL3}}</td></tr>
+      </tbody>
+    </table>
+    <!-- 流程图 -->
+<pre>{{FLOW_DIAGRAM}}</pre>
+  </div>
+
+  <hr class="page-break">
+
+  <!-- ==================== PAGE 5: 章节 6-10 ==================== -->
+  <div class="section" id="sec6">
+    <h2 class="section-title">6. {{CHAPTER_6_TITLE}}</h2>
+    <div class="styled-block">
+      <h3>6.1 {{SUB_TITLE}}</h3>
+    </div>
+<pre>{{SECURITY_DIAGRAM}}</pre>
+    <table>
+      <thead><tr><th>安全层级</th><th>机制</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>{{LEVEL}}</td><td>{{MECHANISM}}</td><td>{{DESC}}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section" id="sec7">
+    <h2 class="section-title">7. {{CHAPTER_7_TITLE}}</h2>
+    <div class="styled-block">
+      <h3>7.1 部署架构</h3>
+    </div>
+    <table>
+      <thead><tr><th>组件</th><th>端口</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>{{COMP}}</td><td>{{PORT}}</td><td>{{COMP_DESC}}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section" id="sec8">
+    <h2 class="section-title">8. {{CHAPTER_8_TITLE}}</h2>
+    <div class="styled-block">
+      <h3>8.1 技术风险</h3>
+    </div>
+    <table>
+      <thead><tr><th>风险项</th><th>风险等级</th><th>应对措施</th></tr></thead>
+      <tbody>
+        <tr><td>{{RISK}}</td><td>{{RISK_LEVEL}}</td><td>{{MITIGATION}}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section" id="sec9">
+    <h2 class="section-title">9. {{CHAPTER_9_TITLE}}</h2>
+    <div class="styled-block">
+      <h3>9.1 实施路线</h3>
+    </div>
+<pre>{{ROADMAP}}</pre>
+    <h3>9.2 关键里程碑</h3>
+    <table>
+      <thead><tr><th>里程碑</th><th>目标</th><th>验收标准</th></tr></thead>
+      <tbody>
+        <tr><td>{{MILESTONE}}</td><td>{{MS_GOAL}}</td><td>{{MS_CRITERIA}}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section" id="sec10">
+    <h2 class="section-title">10. {{CHAPTER_10_TITLE}}</h2>
+    <div class="styled-block">
+      <h3>10.1 方案总结</h3>
+      <p>{{SUMMARY}}</p>
+      <ol>
+        <li><strong>{{HIGHLIGHT_1}}</strong>：{{HIGHLIGHT_1_DESC}}</li>
+      </ol>
+      <h3>10.2 后续展望</h3>
+      <ul>
+        <li><strong>{{OUTLOOK_1}}</strong>：{{OUTLOOK_1_DESC}}</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== Final disclaimer ===== -->
+  <div class="section">
+    <blockquote>
+      ⚠️ <strong>再次声明</strong>：{{FINAL_DISCLAIMER}}
+    </blockquote>
+    <p style="text-align: center; margin-top: 40px; color: var(--gray-600); font-size: 14px;"><strong>— 文档结束 —</strong></p>
+  </div>
+
+  <!-- ===== Footer ===== -->
+  <div class="page-footer">
+    <span>{{FOOTER_LEFT}}</span>
+    <span>{{DOC_ID}} · {{VERSION}}</span>
+    <span>{{CLASSIFICATION}} · INTERNAL</span>
+  </div>
+
+</div>
+</body>
+</html>

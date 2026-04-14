@@ -1,0 +1,42 @@
+# 数据源配置 - 支持爬虫和API两种类型
+providers:
+  # 新浪财经爬虫
+  - name: sina-finance
+    type: crawler
+    enabled: true
+    config:
+      baseUrl: https://finance.sina.com.cn
+      listUrl: /roll/index.d.html
+      timeout: 30000
+      
+  # 东方财富爬虫
+  - name: eastmoney
+    type: crawler
+    enabled: true
+    config:
+      baseUrl: https://www.eastmoney.com
+      listUrl: /cgsjwzx/cgsjwzx.html
+      timeout: 30000
+      
+  # Tushare API
+  - name: tushare
+    type: api
+    enabled: false
+    config:
+      baseUrl: https://api.tushare.pro
+      apiKey: ${TUSHARE_API_KEY:your-api-key}
+      timeout: 30000
+      
+  # Mock数据源（测试用）
+  - name: mock
+    type: mock
+    enabled: true
+    config:
+      filePath: classpath:mock-news.json
+
+# 行情数据配置
+market:
+  provider: eastmoney
+  config:
+    baseUrl: https://quote.eastmoney.com
+    timeout: 30000

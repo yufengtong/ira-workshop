@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>签到打卡</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>签到打卡系统</h1>
+            <div class="current-time" id="currentTime"></div>
+        </header>
+
+        <main class="main-content">
+            <section class="check-in-section">
+                <div class="check-in-card">
+                    <div class="user-avatar" id="userAvatar">
+                        <span id="avatarText">请选择用户</span>
+                    </div>
+                    <div class="user-info" id="userInfo">
+                        <p class="user-name" id="userName">--</p>
+                        <p class="user-department" id="userDepartment">--</p>
+                    </div>
+                    <button class="check-in-btn" id="checkInBtn" disabled>
+                        <span class="btn-icon">✓</span>
+                        <span class="btn-text">签到</span>
+                    </button>
+                </div>
+            </section>
+
+            <section class="user-list-section">
+                <h2>用户列表</h2>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="搜索用户...">
+                </div>
+                <div class="user-list" id="userList">
+                    <!-- 用户列表将通过 JS 动态生成 -->
+                </div>
+            </section>
+
+            <section class="records-section">
+                <h2>今日签到记录</h2>
+                <div class="records-list" id="recordsList">
+                    <!-- 签到记录将通过 JS 动态生成 -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

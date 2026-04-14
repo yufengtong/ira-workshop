@@ -1,0 +1,11 @@
+/Users/chenyi/Desktop/qoder-test/backend/src/main/java/com/stock/controller/KLineController.java
+/Users/chenyi/Desktop/qoder-test/backend/src/main/java/com/stock/StockAnalysisApplication.java
+/Users/chenyi/Desktop/qoder-test/backend/src/main/java/com/stock/service/KLineService.java
+/Users/chenyi/Desktop/qoder-test/backend/src/main/java/com/stock/service/StockService.java
+/Users/chenyi/Desktop/qoder-test/backend/src/main/java/com/stock/repository/StockDataRepository.java
+/Users/chenyi/Desktop/qoder-test/backend/src/main/java/com/stock/config/WebConfig.java
+/Users/chenyi/Desktop/qoder-test/backend/src/main/java/com/stock/config/RestTemplateConfig.java
+/Users/chenyi/Desktop/qoder-test/backend/src/main/java/com/stock/service/AIAnalysisService.java
+/Users/chenyi/Desktop/qoder-test/backend/src/main/java/com/stock/controller/StockController.java
+/Users/chenyi/Desktop/qoder-test/backend/src/main/java/com/stock/model/StockData.java
+/Users/chenyi/Desktop/qoder-test/backend/src/main/java/com/stock/model/KLineData.java

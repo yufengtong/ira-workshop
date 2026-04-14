@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>程序员MBTI测试 v2.0 - 古法编程 x AI协作</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0d1117;
+            --bg-card: #161b22;
+            --border: #30363d;
+            --text-primary: #e6edf3;
+            --text-secondary: #8b949e;
+            --accent: #58a6ff;
+            --accent-green: #3fb950;
+            --accent-purple: #a371f7;
+            --accent-orange: #f0883e;
+            --accent-red: #f85149;
+        }
+
+        body {
+            font-family: 'JetBrains Mono', 'SF Mono', Monaco, monospace;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* 首页 */
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+        }
+
+        .code-block {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 30px 0;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        .code-block .comment {
+            color: var(--text-secondary);
+        }
+
+        .code-block .keyword {
+            color: var(--accent-purple);
+        }
+
+        .code-block .string {
+            color: var(--accent-green);
+        }
+
+        .code-block .function {
+            color: var(--accent);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 16px 40px;
+            font-size: 1.1rem;
+            font-family: inherit;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent-purple));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(88, 166, 255, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+        }
+
+        /* 测试页面 */
+        .quiz-container {
+            display: none;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--bg-card);
+            border-radius: 3px;
+            margin-bottom: 40px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-purple));
+            transition: width 0.3s ease;
+            border-radius: 3px;
+        }
+
+        .question-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+
+        .question-number {
+            color: var(--accent);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .question-text {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .option {
+            background: var(--bg-dark);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 25px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .option:hover {
+            border-color: var(--accent);
+            background: rgba(88, 166, 255, 0.05);
+        }
+
+        .option.selected {
+            border-color: var(--accent);
+            background: rgba(88, 166, 255, 0.1);
+        }
+
+        .option-icon {
+            font-size: 1.5rem;
+        }
+
+        /* 结果页面 */
+        .result-container {
+            display: none;
+        }
+
+        .result-header {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .type-badge {
+            display: inline-block;
+            font-size: 4rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--accent-purple), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 15px;
+        }
+
+        .type-name {
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            margin-bottom: 30px;
+        }
+
+        .type-description {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .traits-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .trait-card {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .trait-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .trait-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .dimension-bar {
+            margin: 20px 0;
+        }
+
+        .dimension-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .dimension-track {
+            height: 8px;
+            background: var(--bg-dark);
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .dimension-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .stats-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .stats-section h3 {
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .tag {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .tag.highlight {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .celebrity-section {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .celebrity-section h3 {
+            margin-bottom: 20px;
+            color: var(--accent-green);
+        }
+
+        .celebrity-list {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .celebrity-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--bg-dark);
+            border-radius: 12px;
+            padding: 15px 20px;
+        }
+
+        .celebrity-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        /* 类型图片 */
+        .type-image {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 30px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+            background: linear-gradient(135deg, var(--bg-card), var(--bg-dark));
+            border: 2px solid var(--border);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .type-image::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(88, 166, 255, 0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        /* 雷达图容器 */
+        .radar-container {
+            display: flex;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .radar-chart {
+            width: 300px;
+            height: 300px;
+        }
+
+        /* 维度对比图 */
+        .dimension-compare {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .compare-item {
+            background: var(--bg-dark);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .compare-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .compare-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .compare-bar {
+            height: 6px;
+            background: var(--bg-card);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .compare-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 1s ease;
+        }
+
+        /* 类型卡片 */
+        .type-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .type-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .type-card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .type-card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-purple));
+        }
+
+        .type-card-title {
+            flex: 1;
+        }
+
+        .type-card-code {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .type-card-name {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+
+        @media (max-width: 600px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .type-badge {
+                font-size: 2.5rem;
+            }
+            
+            .traits-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .question-card {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 首页 -->
+        <div id="home" class="hero">
+            <h1>&lt;ProgrammerMBTI /&gt;</h1>
+            <p class="subtitle">发现你的代码人格类型</p>
+            
+            <div class="code-block">
+                <div><span class="comment">// 程序员MBTI测试 v2.0</span></div>
+                <div><span class="keyword">const</span> <span class="function">discoverYourType</span> = () => {</div>
+                <div>&nbsp;&nbsp;<span class="keyword">const</span> questions = <span class="string">"30个精选问题"</span>;</div>
+                <div>&nbsp;&nbsp;<span class="keyword">const</span> dimensions = [</div>
+                <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"代码风格"</span>, <span class="string">"问题解决"</span>, <span class="string">"团队协作"</span>,</div>
+                <div>&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"技术态度"</span>, <span class="string">"古法编程"</span>, <span class="string">"AI协作"</span></div>
+                <div>&nbsp;&nbsp;];</div>
+                <div>&nbsp;&nbsp;<span class="keyword">return</span> <span class="string">"64种独特的程序员人格"</span>;</div>
+                <div>}</div>
+            </div>
+            
+            <button class="btn btn-primary" onclick="startQuiz()">开始测试</button>
+            <button class="btn btn-secondary" onclick="showTypes()">查看所有类型</button>
+        </div>
+
+        <!-- 测试页面 -->
+        <div id="quiz" class="quiz-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <div class="question-card">
+                <div class="question-number" id="questionNumber">问题 1/20</div>
+                <div class="question-text" id="questionText"></div>
+                <div class="options" id="options"></div>
+            </div>
+        </div>
+
+        <!-- 结果页面 -->
+        <div id="result" class="result-container">
+            <div class="result-header">
+                <div class="type-image" id="typeImage">🏗️</div>
+                <div class="type-badge" id="typeBadge">CLST</div>
+                <div class="type-name" id="typeName">完美架构师</div>
+            </div>
+
+            <div class="type-description" id="typeDescription">
+                <!-- 动态填充 -->
+            </div>
+
+            <div class="stats-section">
+                <h3>📊 你的维度雷达图</h3>
+                <div class="radar-container">
+                    <canvas id="radarChart" class="radar-chart" width="300" height="300"></canvas>
+                </div>
+            </div>
+
+            <div class="stats-section">
+                <h3>📈 维度详细分析</h3>
+                <div class="dimension-compare" id="dimensionCompare"></div>
+            </div>
+
+            <div class="traits-grid" id="traitsGrid">
+                <!-- 动态填充 -->
+            </div>
+
+            <div class="stats-section">
+                <h3>💻 适合你的技术栈</h3>
+                <div class="tag-list" id="techStack"></div>
+            </div>
+
+            <div class="stats-section">
+                <h3>🎯 你的优势</h3>
+                <div class="tag-list" id="strengths"></div>
+            </div>
+
+            <div class="stats-section">
+                <h3>⚠️ 需要注意</h3>
+                <div class="tag-list" id="weaknesses"></div>
+            </div>
+
+            <div class="celebrity-section">
+                <h3>👥 同类程序员</h3>
+                <div class="celebrity-list" id="celebrities"></div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="restartQuiz()">重新测试</button>
+                <button class="btn btn-secondary" onclick="shareResult()">分享结果</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 测试题目
+        const questions = [
+            // 代码风格维度 (C vs M)
+            {
+                text: "当你接手一个遗留项目时，你的第一反应是？",
+                dimension: "CM",
+                options: [
+                    { text: "先重构代码，统一代码风格，完善文档", value: "C", icon: "🧹" },
+                    { text: "能跑就行，先理解业务逻辑再考虑重构", value: "M", icon: "🏃" }
+                ]
+            },
+            {
+                text: "关于代码注释，你的观点是？",
+                dimension: "CM",
+                options: [
+                    { text: "好的代码应该自解释，注释是代码不够清晰的标志", value: "C", icon: "📝" },
+                    { text: "注释很重要，能帮助快速理解代码意图", value: "M", icon: "💬" }
+                ]
+            },
+            {
+                text: "变量命名时，你更倾向于？",
+                dimension: "CM",
+                options: [
+                    { text: "使用完整、描述性的命名，哪怕很长", value: "C", icon: "📖" },
+                    { text: "简洁为主，用缩写或短命名", value: "M", icon: "✂️" }
+                ]
+            },
+            {
+                text: "项目 deadline 临近，但代码还不够整洁，你会？",
+                dimension: "CM",
+                options: [
+                    { text: "坚持代码质量，向 PM 争取更多时间", value: "C", icon: "⚖️" },
+                    { text: "先完成功能，技术债后面再还", value: "M", icon: "🚀" }
+                ]
+            },
+            {
+                text: "看到同事提交了不符合规范的代码，你会？",
+                dimension: "CM",
+                options: [
+                    { text: "在 code review 中严格要求修改", value: "C", icon: "🔍" },
+                    { text: "如果功能没问题，小问题可以放过", value: "M", icon: "🤝" }
+                ]
+            },
+
+            // 问题解决维度 (L vs I)
+            {
+                text: "遇到 bug 时，你通常怎么解决？",
+                dimension: "LI",
+                options: [
+                    { text: "一步步调试，分析日志，找出根本原因", value: "L", icon: "🔬" },
+                    { text: "凭直觉定位问题，尝试可能的解决方案", value: "I", icon: "🎯" }
+                ]
+            },
+            {
+                text: "学习新技术时，你更喜欢？",
+                dimension: "LI",
+                options: [
+                    { text: "先系统学习原理，再动手实践", value: "L", icon: "📚" },
+                    { text: "直接上手做项目，在实践中学习", value: "I", icon: "🔨" }
+                ]
+            },
+            {
+                text: "设计系统架构时，你更注重？",
+                dimension: "LI",
+                options: [
+                    { text: "严谨的设计模式，可扩展的架构", value: "L", icon: "🏗️" },
+                    { text: "快速迭代，根据需求灵活调整", value: "I", icon: "🌊" }
+                ]
+            },
+            {
+                text: "面对一个复杂需求，你会？",
+                dimension: "LI",
+                options: [
+                    { text: "先画流程图，写技术文档，理清逻辑", value: "L", icon: "📋" },
+                    { text: "直接开始 coding，边做边想", value: "I", icon: "⚡" }
+                ]
+            },
+            {
+                text: "你的 debug 工具主要是？",
+                dimension: "LI",
+                options: [
+                    { text: "断点调试、日志分析、性能剖析工具", value: "L", icon: "🛠️" },
+                    { text: "console.log 和直觉", value: "I", icon: "🎲" }
+                ]
+            },
+
+            // 团队协作维度 (S vs T)
+            {
+                text: "你更喜欢的工作方式是？",
+                dimension: "ST",
+                options: [
+                    { text: "一个人安静 coding，减少干扰", value: "S", icon: "🎧" },
+                    { text: "和团队一起，随时讨论交流", value: "T", icon: "👥" }
+                ]
+            },
+            {
+                text: "对于 pair programming，你的看法是？",
+                dimension: "ST",
+                options: [
+                    { text: "效率低，一个人做更快", value: "S", icon: "🐆" },
+                    { text: "能学到很多，提高代码质量", value: "T", icon: "🤝" }
+                ]
+            },
+            {
+                text: "项目需要你做不擅长的任务，你会？",
+                dimension: "ST",
+                options: [
+                    { text: "自己研究，尽量独立完成", value: "S", icon: "🦉" },
+                    { text: "找擅长的同事请教合作", value: "T", icon: "🐝" }
+                ]
+            },
+            {
+                text: "代码 review 时，你更倾向于？",
+                dimension: "ST",
+                options: [
+                    { text: "异步 review，有问题再单独沟通", value: "S", icon: "📧" },
+                    { text: "面对面讨论，当场解决问题", value: "T", icon: "💬" }
+                ]
+            },
+            {
+                text: "远程工作和办公室工作，你选？",
+                dimension: "ST",
+                options: [
+                    { text: "远程，自由安排时间和环境", value: "S", icon: "🏠" },
+                    { text: "办公室，喜欢团队氛围", value: "T", icon: "🏢" }
+                ]
+            },
+
+            // 技术态度维度 (J vs P)
+            {
+                text: "对于新技术，你的态度是？",
+                dimension: "JP",
+                options: [
+                    { text: "等成熟稳定后再考虑使用", value: "J", icon: "🛡️" },
+                    { text: "迫不及待想在项目中尝试", value: "P", icon: "🔥" }
+                ]
+            },
+            {
+                text: "你的 side project 通常？",
+                dimension: "JP",
+                options: [
+                    { text: "有完整规划，坚持做完", value: "J", icon: "✅" },
+                    { text: "想到哪做到哪，经常开新坑", value: "P", icon: "🎨" }
+                ]
+            },
+            {
+                text: "项目技术选型，你更看重？",
+                dimension: "JP",
+                options: [
+                    { text: "稳定可靠，社区成熟", value: "J", icon: "⚓" },
+                    { text: "先进前沿，性能优越", value: "P", icon: "🚀" }
+                ]
+            },
+            {
+                text: "看到 GitHub trending 上的新框架，你会？",
+                dimension: "JP",
+                options: [
+                    { text: "先观察一段时间，看社区反馈", value: "J", icon: "👀" },
+                    { text: "马上 clone 下来跑 demo", value: "P", icon: "⚡" }
+                ]
+            },
+            {
+                text: "你的开发环境更新频率？",
+                dimension: "JP",
+                options: [
+                    { text: "稳定为主，不轻易升级", value: "J", icon: "🐢" },
+                    { text: "追新，有更新就想试试", value: "P", icon: "🐇" }
+                ]
+            },
+
+            // 古法编程维度 (A vs N) - Ancient vs New
+            {
+                text: "关于 Vim/Emacs，你的态度是？",
+                dimension: "AN",
+                options: [
+                    { text: "编辑器之神，我的主力开发工具", value: "A", icon: "🧙" },
+                    { text: "太难学，VS Code 真香", value: "N", icon: "🆚" }
+                ]
+            },
+            {
+                text: "写代码时，你更倾向于？",
+                dimension: "AN",
+                options: [
+                    { text: "用终端 + Tmux，拒绝 GUI", value: "A", icon: "⌨️" },
+                    { text: "图形化 IDE，效率至上", value: "N", icon: "🖱️" }
+                ]
+            },
+            {
+                text: "遇到问题时，你会？",
+                dimension: "AN",
+                options: [
+                    { text: "先 man 一下，看官方文档", value: "A", icon: "📜" },
+                    { text: "直接 Google/ChatGPT 搜索", value: "N", icon: "🔍" }
+                ]
+            },
+            {
+                text: "你的代码版本控制习惯？",
+                dimension: "AN",
+                options: [
+                    { text: "Git 命令行，commit message 严谨", value: "A", icon: "📦" },
+                    { text: "GUI 工具，图形化操作更直观", value: "N", icon: "🖼️" }
+                ]
+            },
+            {
+                text: "对于 C 语言，你的看法是？",
+                dimension: "AN",
+                options: [
+                    { text: "编程之本，每个程序员都应该学", value: "A", icon: "🏛️" },
+                    { text: "太底层了，现代语言更安全高效", value: "N", icon: "🚀" }
+                ]
+            },
+
+            // AI 编程维度 (H vs R) - Human vs Robot
+            {
+                text: "使用 Copilot/ChatGPT 写代码，你会？",
+                dimension: "HR",
+                options: [
+                    { text: "作为参考，自己理解后再写", value: "H", icon: "🧠" },
+                    { text: "直接复制，能跑就行", value: "R", icon: "🤖" }
+                ]
+            },
+            {
+                text: "AI 生成的代码有 bug，你会？",
+                dimension: "HR",
+                options: [
+                    { text: "自己 debug，理解问题根源", value: "H", icon: "🔧" },
+                    { text: "再问 AI，让它修复", value: "R", icon: "💬" }
+                ]
+            },
+            {
+                text: "对于 AI 编程工具，你的态度是？",
+                dimension: "HR",
+                options: [
+                    { text: "辅助工具，不能替代思考", value: "H", icon: "✍️" },
+                    { text: "效率神器，重度依赖", value: "R", icon: "⚡" }
+                ]
+            },
+            {
+                text: "学习新技术时，你会？",
+                dimension: "HR",
+                options: [
+                    { text: "看官方文档，动手实践", value: "H", icon: "📖" },
+                    { text: "让 AI 给我总结重点", value: "R", icon: "🤖" }
+                ]
+            },
+            {
+                text: "代码 review 时看到 AI 生成的代码，你会？",
+                dimension: "HR",
+                options: [
+                    { text: "仔细审查，确保理解每行代码", value: "H", icon: "🔍" },
+                    { text: "AI 写的应该没问题，快速过", value: "R", icon: "✅" }
+                ]
+            }
+        ];
+
+        // 16种类型定义
+        const types = {
+            "CLST": {
+                name: "完美架构师",
+                icon: "🏗️",
+                color: "#58a6ff",
+                tagline: "代码如建筑，每一砖一瓦都要经得起时间的考验",
+                description: "你是代码界的处女座，追求极致的整洁与完美。看到不规范的命名会让你失眠，遇到烂代码会让你抓狂。你写的每一行代码都像是艺术品，连注释都写得像散文一样优美。团队里的人都敬畏你，因为你总能找出他们代码里的第108个问题。虽然有时候会被说「过度工程」，但你知道——今天的偷懒就是明天的技术债！",
+                workStyle: "你会花3小时重构一个只需要30分钟实现的功能，因为「优雅永不过时」。你的Git commit message 像诗一样工整，Code Review 时连缩进不对都能看出来。",
+                funFact: "你的IDE配置文件夹有5GB，里面有37套配色方案，但你还是不满意。",
+                techStack: ["Rust", "Haskell", "Java", "Spring Boot", "PostgreSQL", "Kubernetes"],
+                strengths: ["代码质量极高", "架构设计严谨", "文档完善", "可维护性强", "Code Review 专家"],
+                weaknesses: ["可能过度工程", "开发速度较慢", "对团队要求较高", "容易陷入完美主义陷阱"],
+                celebrities: [
+                    { name: "Martin Fowler", role: "重构之父", avatar: "🎩" },
+                    { name: "Robert Martin", role: "Clean Code", avatar: "📖" }
+                ]
+            },
+            "CLSP": {
+                name: "创新极客",
+                icon: "🚀",
+                color: "#a371f7",
+                tagline: "别人还在学Vue3，我已经在用Vue9了",
+                description: "你是技术圈的弄潮儿，GitHub Trending 是你的每日必刷。看到新框架发布比看到工资到账还兴奋，你的 side project 永远比主业项目用的技术新。虽然有时候会因为技术太新而踩坑，但你享受这种走在前沿的感觉。团队里的人都来找你问「现在什么技术最火」，你就是行走的技术雷达！",
+                workStyle: "你会在凌晨3点升级生产环境的依赖版本，因为「这个patch版本修复了一个内存泄漏」。你的简历上写着「精通XXX」，但那个XXX可能才发布两周。",
+                funFact: "你的GitHub Stars列表有3000多个仓库，你打算「有空再看」。",
+                techStack: ["TypeScript", "Go", "Rust", "GraphQL", "Docker", "WebAssembly"],
+                strengths: ["技术视野开阔", "代码质量高", "创新能力强", "学习速度快", "技术布道者"],
+                weaknesses: ["可能过于追求新技术", "兼容性问题", "团队适应成本高", "稳定性风险"],
+                celebrities: [
+                    { name: "Dan Abramov", role: "React Core", avatar: "⚛️" },
+                    { name: "Ryan Dahl", role: "Node.js/Deno", avatar: "🦕" }
+                ]
+            },
+            "CLTJ": {
+                name: "协作专家",
+                icon: "🤝",
+                color: "#3fb950",
+                tagline: "一个人走得快，一群人走得远，我选择带大家飞",
+                description: "你是团队的粘合剂，Code Review 时既严格又温柔。你写的代码像教科书一样规范，连实习生都能看懂。你热衷于组织技术分享会，写Wiki文档比写代码还认真。虽然有时候会议有点多，但你相信沟通能解决一切问题。团队里的人都爱你，因为你总是耐心解答他们的「弱智问题」。",
+                workStyle: "你会花1小时帮同事debug一个分号问题，还会温柔地说「没关系，我也经常犯」。你的Slack状态永远是「随时可打扰」，虽然这让你很难有深度工作时间。",
+                funFact: "你的Confluence页面有200多篇文档，但你发现没人看。",
+                techStack: ["Python", "Django", "React", "Git", "Jira", "Confluence"],
+                strengths: ["团队协作强", "代码规范", "沟通能力强", "乐于助人", "知识传承者"],
+                weaknesses: ["会议可能过多", "决策时间较长", "容易被他人影响", "个人产出受影响"],
+                celebrities: [
+                    { name: "Guido van Rossum", role: "Python之父", avatar: "🐍" },
+                    { name: "Addy Osmani", role: "Chrome DevTools", avatar: "🔧" }
+                ]
+            },
+            "CLTP": {
+                name: "社交黑客",
+                icon: "🎉",
+                color: "#f0883e",
+                tagline: "代码写得好，段子讲得妙，团建少不了",
+                description: "你是程序员中的社交天花板，技术会议上最靓的仔。你不仅能写出优雅的代码，还能在团建时活跃气氛。你组织的黑客松总是人气爆棚，你的技术博客既有干货又有梗。虽然有时候承诺太多导致加班，但你享受这种被需要的感觉。你就是那个让技术团队不再「社恐」的人！",
+                workStyle: "你会在写代码的间隙回复20条Slack消息，还能同时开3个会。你的日历永远是满的，但你总能神奇地按时交付。",
+                funFact: "你的微信好友里有500个程序员，你记得住每个人的技术栈。",
+                techStack: ["JavaScript", "Vue", "Node.js", "MongoDB", "Redis", "AWS"],
+                strengths: ["技术+社交双优", "团队影响力大", "创新实践者", "分享精神", "人脉广泛"],
+                weaknesses: ["容易被新想法分散", "深度专注时间少", "承诺可能过多", "精力分散"],
+                celebrities: [
+                    { name: "Evan You", role: "Vue.js", avatar: "💚" },
+                    { name: "Sindre Sorhus", role: "开源大神", avatar: "🦄" }
+                ]
+            },
+            "CISJ": {
+                name: "独立工匠",
+                icon: "🎨",
+                color: "#58a6ff",
+                tagline: "我即团队，键盘即武器，代码即艺术",
+                description: "你是代码界的隐士高人，一个人就是一个团队。你喜欢在深夜独自coding，戴着耳机沉浸在自己的世界里。你的代码像艺术品一样精致，但只有你一个人能看懂。虽然你不善言辞，但你的技术实力让所有人佩服。给你一个问题，还你一个奇迹——这就是你的风格。",
+                workStyle: "你会拒绝所有早上10点之前的会议，因为那是你的深度工作时间。你的GitHub贡献图是连续的绿色，但你的Slack回复永远延迟。",
+                funFact: "你的Vim配置花了3年时间打磨，现在离开它你就不会写代码了。",
+                techStack: ["C++", "Algorithm", "System Design", "Linux", "Vim", "Git"],
+                strengths: ["独立解决问题", "深度思考", "技术专精", "自我驱动", "专注力极强"],
+                weaknesses: ["可能过于孤立", "沟通不足", "知识分享较少", "团队协作挑战"],
+                celebrities: [
+                    { name: "Linus Torvalds", role: "Linux/Git", avatar: "🐧" },
+                    { name: "Ken Thompson", role: "Unix/B/C", avatar: "🖥️" }
+                ]
+            },
+            "CISP": {
+                name: "独狼探索者",
+                icon: "🐺",
+                color: "#a371f7",
+                tagline: "走在技术前沿的孤勇者，我的代码我做主",
+                description: "你是技术荒野中的探险家，永远在追逐下一个大事件。你的GitHub是各种实验性项目的墓地，但也埋藏着未来的宝藏。你不屑于随大流，总是选择最酷但最冷门的方案。虽然别人看不懂你在干什么，但你知道——未来会证明你是对的！",
+                workStyle: "你会在凌晨4点提交代码，因为「灵感来了」。你的项目README永远写着「WIP」，但已经跑了3年。",
+                funFact: "你的电脑装了7种Linux发行版，你每天随机选一个启动。",
+                techStack: ["Rust", "WebAssembly", "Blockchain", "AI/ML", "Neovim", "Arch"],
+                strengths: ["独立思考", "技术创新", "快速学习", "个人项目丰富", "前瞻性"],
+                weaknesses: ["团队协作弱", "代码可能过于个性化", "长期维护挑战", "落地困难"],
+                celebrities: [
+                    { name: "George Hotz", role: "Comma.ai", avatar: "🚗" },
+                    { name: "Fabrice Bellard", role: "FFmpeg/QEMU", avatar: "🏆" }
+                ]
+            },
+            "CITJ": {
+                name: "逻辑导师",
+                icon: "📚",
+                color: "#3fb950",
+                tagline: "授人以鱼不如授人以渔，但我会两样都教",
+                description: "你是团队里的技术大神，别人眼中的「人形Stack Overflow」。你不仅代码写得好，还能把复杂的技术讲得通俗易懂。实习生在你手下3个月就能独当一面，因为你总是耐心指导。虽然有时候会被问烦，但看到团队成长，你比谁都开心。",
+                workStyle: "你的代码审查意见总是很长，但每一条都是金玉良言。你写的技术文档被当成教材，连其他团队都来借阅。",
+                funFact: "你的邮箱里有500封未回复的技术咨询邮件，你打算「周末统一回复」——已经说了半年。",
+                techStack: ["Java", "Spring", "MySQL", "Redis", "Elasticsearch", "Kafka"],
+                strengths: ["问题解决强", "指导能力", "逻辑清晰", "团队贡献大", "传承精神"],
+                weaknesses: ["可能过于自信", "耐心有时不足", "完美主义倾向", "时间被分散"],
+                celebrities: [
+                    { name: "Josh Bloch", role: "Java架构", avatar: "☕" },
+                    { name: "Doug Cutting", role: "Hadoop/Lucene", avatar: "🐘" }
+                ]
+            },
+            "CITP": {
+                name: "灵感领袖",
+                icon: "💡",
+                color: "#f0883e",
+                tagline: "灵感如闪电，代码如流水，我就是创意的源泉",
+                description: "你是团队里的「点子王」，脑子里永远有10个新想法在排队。你能在洗澡的时候想到解决方案，在梦里debug成功。虽然有时候想法太多执行跟不上，但你的创意总能给团队带来突破。你就是那个让项目从0到1的人！",
+                workStyle: "你会在白板上画满架构图，然后突然说「等等，我有个更好的想法」。你的笔记本里有100个创业点子，虽然一个都没做。",
+                funFact: "你曾经在梦中写出了一个算法，醒来发现真的能用——虽然变量名全是「aaaa」。",
+                techStack: ["Python", "TensorFlow", "React", "GraphQL", "Serverless", "GCP"],
+                strengths: ["创意十足", "解决问题快", "团队激励", "技术前沿", "思维活跃"],
+                weaknesses: ["可能缺乏系统性", "跟进不够持久", "细节关注不足", "想法太多"],
+                celebrities: [
+                    { name: "Andrej Karpathy", role: "AI/Tesla", avatar: "🤖" },
+                    { name: "Guillermo Rauch", role: "Next.js/Vercel", avatar: "▲" }
+                ]
+            },
+            "MLST": {
+                name: "务实工程师",
+                icon: "🔧",
+                color: "#58a6ff",
+                tagline: "代码能跑就行？不，代码能跑且按时交付才行",
+                description: "你是团队里的「救火队长」，产品经理的最爱。不管多紧急的需求，你总能按时交付。你的代码可能不够优雅，但绝对可靠。当别人还在讨论用什么框架时，你已经写完了。虽然技术债有点多，但你相信——先解决生存问题，再谈理想！",
+                workStyle: "你的座右铭是「Done is better than perfect」。你会用jQuery写新功能，因为「它还在工作」。你的TODO list永远是满的，但你总能神奇地完成。",
+                funFact: "你的代码里有20年前的注释，上面写着「临时方案，后面再优化」——现在它还在跑。",
+                techStack: ["PHP", "Laravel", "MySQL", "jQuery", "Apache", "CentOS"],
+                strengths: ["交付能力强", "务实高效", "适应性好", "deadline杀手", "抗压能力"],
+                weaknesses: ["技术债累积", "代码维护难", "长期可扩展性", "文档较少"],
+                celebrities: [
+                    { name: "Rasmus Lerdorf", role: "PHP", avatar: "🐘" },
+                    { name: "Taylor Otwell", role: "Laravel", avatar: "🎨" }
+                ]
+            },
+            "MLSP": {
+                name: "敏捷黑客",
+                icon: "⚡",
+                color: "#f85149",
+                tagline: "快速迭代，快速试错，快速成功——或者快速失败",
+                description: "你是创业公司的理想人选，能在48小时内做出MVP。你对新技术有着敏锐的嗅觉，总能找到最快捷的路径。虽然代码有时候像意大利面条，但它能工作！你相信「先上线，后优化」，因为市场不等人。",
+                workStyle: "你会在黑客松上连续coding 24小时，然后拿着奖品去睡觉。你的GitHub是各种「wip-xxx」分支的集合，但每个都可能是个金矿。",
+                funFact: "你曾经在一天之内用3种不同的框架写了同一个功能，最后决定用第一种。",
+                techStack: ["Node.js", "Express", "MongoDB", "React", "Docker", "Heroku"],
+                strengths: ["快速开发", "原型能力强", "技术敏感", "创业精神", "执行力强"],
+                weaknesses: ["代码质量参差", "长期维护挑战", "架构可能欠考虑", "技术债高"],
+                celebrities: [
+                    { name: "TJ Holowaychuk", role: "Express/Koa", avatar: "⚡" },
+                    { name: "John Resig", role: "jQuery", avatar: "💲" }
+                ]
+            },
+            "MLTJ": {
+                name: "团队粘合剂",
+                icon: "🔗",
+                color: "#3fb950",
+                tagline: "我不是在协调，就是在去协调的路上",
+                description: "你是团队里的「和事佬」，冲突的终结者。你能让前端和后端握手言和，让产品和开发达成共识。虽然技术深度不是最强，但你的协调能力让项目顺利推进。你就是那个让所有人都能开心工作的人！",
+                workStyle: "你的日程表上全是「同步会」「对齐会」「复盘会」。你会记得每个人的生日，知道谁喜欢喝什么咖啡。你的存在让办公室氛围变得温暖。",
+                funFact: "你的Slack里有37个不同的群组，你是其中30个的管理员。",
+                techStack: ["Python", "Flask", "PostgreSQL", "Bootstrap", "GitLab", "Slack"],
+                strengths: ["团队协作强", "沟通顺畅", "务实可靠", "团队凝聚力", "情商高"],
+                weaknesses: ["可能回避冲突", "技术深度有限", "难以拒绝请求", "个人时间少"],
+                celebrities: [
+                    { name: "Miguel Grinberg", role: "Flask", avatar: "🌶️" },
+                    { name: "Kenneth Reitz", role: "Requests", avatar: "🐍" }
+                ]
+            },
+            "MLTP": {
+                name: "派对程序员",
+                icon: "🎊",
+                color: "#f0883e",
+                tagline: "写代码是工作，交朋友是生活，两者都要精彩",
+                description: "你是程序员中的「交际花」，技术会议上的明星。你不仅代码写得好，段子也讲得妙。你组织的团建总是人气爆棚，你的技术分享总是座无虚席。虽然有时候玩得太嗨忘了写代码，但你相信——快乐工作才能高效产出！",
+                workStyle: "你会在咖啡馆写代码，因为「氛围好」。你的最佳代码都是在聊天中写出来的。你认识全公司的每个人，包括保洁阿姨。",
+                funFact: "你的微信运动步数永远是第一，因为你总在各个工位之间穿梭聊天。",
+                techStack: ["JavaScript", "React Native", "Firebase", "Expo", "Vercel", "Figma"],
+                strengths: ["社交能力强", "创意实现快", "团队氛围好", "跨领域能力", "人脉广泛"],
+                weaknesses: ["专注时间少", "项目完成率", "深度技术钻研", "容易被分心"],
+                celebrities: [
+                    { name: "Lee Byron", role: "GraphQL/React", avatar: "◈" },
+                    { name: "Devin Abbott", role: "React Native", avatar: "📱" }
+                ]
+            },
+            "MISJ": {
+                name: "孤胆侠客",
+                icon: "⚔️",
+                color: "#58a6ff",
+                tagline: "十步杀一人，千里不留行——代码界的独行侠",
+                description: "你是技术界的「独行侠」，一个人就是一个团队。你不喜欢开会，不喜欢文档，只喜欢写代码。给你一个问题，你会用最直接的方式解决。虽然代码风格独特，但效率极高。你是紧急救火的最佳人选！",
+                workStyle: "你会在深夜独自解决生产环境问题，第二天早上轻描淡写地说「修好了」。你的代码只有你能看懂，但你不在乎，因为「能跑就行」。",
+                funFact: "你的GitHub头像是一只狼，你的个人简介写着「我独自coding」。",
+                techStack: ["Perl", "Shell", "C", "Vim", "Tmux", "Linux"],
+                strengths: ["独立作战", "问题解决快", "适应力强", "紧急响应", "效率高"],
+                weaknesses: ["代码可读性", "知识传承", "团队协作弱", "文档缺失"],
+                celebrities: [
+                    { name: "Larry Wall", role: "Perl", avatar: "🐪" },
+                    { name: "Bram Moolenaar", role: "Vim", avatar: "📝" }
+                ]
+            },
+            "MISP": {
+                name: "荒野猎人",
+                icon: "🏹",
+                color: "#f85149",
+                tagline: "在技术的荒野中，我是自己的指南针",
+                description: "你是技术界的「荒野求生专家」，在别人不敢碰的领域里游刃有余。你不需要IDE，不需要框架，一行shell脚本就能征服世界。你的代码像谜一样，但运行起来像诗一样流畅。虽然没人能看懂你的代码，但大家都知道——它能工作，而且很快！",
+                workStyle: "你会用汇编写脚本，用C写网页，因为「这样更高效」。你的开发环境是一台10年前的ThinkPad，但你用它写出了最酷的软件。",
+                funFact: "你的电脑没有图形界面，但你的生产力是别人的10倍。",
+                techStack: ["Assembly", "Embedded", "IoT", "Blockchain", "Custom Tools", "Self-hosted"],
+                strengths: ["独特视角", "创新能力强", "自给自足", "技术深度", "极限效率"],
+                weaknesses: ["难以合作", "代码风格独特", "标准化程度低", "入门门槛高"],
+                celebrities: [
+                    { name: "Satoshi Nakamoto", role: "Bitcoin", avatar: "₿" },
+                    { name: "John Carmack", role: "Doom/VR", avatar: "🎮" }
+                ]
+            },
+            "MITJ": {
+                name: "实战导师",
+                icon: "🎓",
+                color: "#3fb950",
+                tagline: "十年磨一剑，霜刃未曾试——但今天可以教你",
+                description: "你是团队里的「老法师」，经历过无数次生产事故，所以知道怎么避免。你不追求新技术，但你的解决方案永远最可靠。新人眼中的你像百科全书，什么问题都能答。虽然有时候显得保守，但你的建议总能帮团队避开大坑。",
+                workStyle: "你会说「这个我们5年前试过，不行」，然后给出更好的方案。你的代码审查意见总是附带一个「当年我们踩过的坑」的故事。",
+                funFact: "你的邮箱签名是「经验是最好的老师，但我可以当你的助教」。",
+                techStack: ["Java", "Spring Boot", "Oracle", "Maven", "Jenkins", "Jira"],
+                strengths: ["经验丰富", "指导能力强", "实战派", "风险意识", "稳定性"],
+                weaknesses: ["可能过于保守", "新技术接受慢", "完美主义缺失", "创新不足"],
+                celebrities: [
+                    { name: "Rod Johnson", role: "Spring", avatar: "🌱" },
+                    { name: "Gavin King", role: "Hibernate", avatar: "💤" }
+                ]
+            },
+            "MITP": {
+                name: "变革推动者",
+                icon: "🔥",
+                color: "#f85149",
+                tagline: "不破不立，大破大立——跟我一起颠覆现状",
+                description: "你是团队里的「革命家」，永远在挑战现状。你不喜欢「我们一直这样做」的理由，总在寻找更好的方法。虽然有时候显得激进，但你的直觉往往是对的。你就是那个让团队走出舒适区的人，虽然过程有点痛苦，但结果总是值得的！",
+                workStyle: "你会在季度规划会上说「我觉得我们应该重写整个系统」，然后真的说服了大家。你的「实验项目」经常变成「核心系统」。",
+                funFact: "你的口头禅是「这不行，我们得换个思路」，然后说出一个疯狂但可行的方案。",
+                techStack: ["Kotlin", "Flutter", "AWS", "Kubernetes", "Terraform", "Datadog"],
+                strengths: ["变革能力强", "直觉敏锐", "团队激励", "快速适应", "领导力"],
+                weaknesses: ["可能过于激进", "稳定性考虑少", "长期规划不足", "风险高"],
+                celebrities: [
+                    { name: "Jake Wharton", role: "Android/Kotlin", avatar: "🤖" },
+                    { name: "Eric Elliott", role: "JS/区块链", avatar: "🚀" }
+                ]
+            }
+        };
+
+        let currentQuestion = 0;
+        let scores = { C: 0, M: 0, L: 0, I: 0, S: 0, T: 0, J: 0, P: 0, A: 0, N: 0, H: 0, R: 0 };
+
+        function startQuiz() {
+            document.getElementById('home').style.display = 'none';
+            document.getElementById('quiz').style.display = 'block';
+            currentQuestion = 0;
+            scores = { C: 0, M: 0, L: 0, I: 0, S: 0, T: 0, J: 0, P: 0, A: 0, N: 0, H: 0, R: 0 };
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            document.getElementById('questionNumber').textContent = `问题 ${currentQuestion + 1}/${questions.length}`;
+            document.getElementById('questionText').textContent = question.text;
+            
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            document.getElementById('progressFill').style.width = `${progress}%`;
+            
+            const optionsContainer = document.getElementById('options');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'option';
+                optionDiv.innerHTML = `
+                    <span class="option-icon">${option.icon}</span>
+                    <span>${option.text}</span>
+                `;
+                optionDiv.onclick = () => selectOption(option.value);
+                optionsContainer.appendChild(optionDiv);
+            });
+        }
+
+        function selectOption(value) {
+            scores[value]++;
+            
+            // 添加选中效果
+            const options = document.querySelectorAll('.option');
+            options.forEach(opt => opt.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+            
+            setTimeout(() => {
+                currentQuestion++;
+                if (currentQuestion < questions.length) {
+                    showQuestion();
+                } else {
+                    showResult();
+                }
+            }, 300);
+        }
+
+        function showResult() {
+            document.getElementById('quiz').style.display = 'none';
+            document.getElementById('result').style.display = 'block';
+            
+            // 计算类型
+            const type = 
+                (scores.C >= scores.M ? 'C' : 'M') +
+                (scores.L >= scores.I ? 'L' : 'I') +
+                (scores.S >= scores.T ? 'S' : 'T') +
+                (scores.J >= scores.P ? 'J' : 'P');
+            
+            const typeData = types[type];
+            
+            // 设置类型图片和颜色
+            document.getElementById('typeImage').textContent = typeData.icon;
+            document.getElementById('typeImage').style.borderColor = typeData.color;
+            document.getElementById('typeBadge').textContent = type;
+            document.getElementById('typeName').textContent = typeData.name;
+            
+            // 更新描述区域，添加标语、工作风格和趣闻
+            document.getElementById('typeDescription').innerHTML = `
+                <div style="font-size: 1.2rem; color: ${typeData.color}; font-weight: 600; margin-bottom: 15px; font-style: italic;">
+                    「${typeData.tagline}」
+                </div>
+                <div style="margin-bottom: 20px; line-height: 1.8;">
+                    ${typeData.description}
+                </div>
+                <div style="background: var(--bg-dark); border-radius: 12px; padding: 20px; margin-bottom: 15px;">
+                    <div style="color: var(--accent); font-weight: 600; margin-bottom: 8px;">💼 你的工作风格</div>
+                    <div style="color: var(--text-secondary);">${typeData.workStyle}</div>
+                </div>
+                <div style="background: var(--bg-dark); border-radius: 12px; padding: 20px;">
+                    <div style="color: var(--accent-green); font-weight: 600; margin-bottom: 8px;">😄 有趣的事实</div>
+                    <div style="color: var(--text-secondary);">${typeData.funFact}</div>
+                </div>
+            `;
+            
+            // 绘制雷达图
+            drawRadarChart();
+            
+            // 维度详细分析
+            const dimensionCompare = document.getElementById('dimensionCompare');
+            const cPercent = Math.round((scores.C / 5) * 100);
+            const lPercent = Math.round((scores.L / 5) * 100);
+            const sPercent = Math.round((scores.S / 5) * 100);
+            const jPercent = Math.round((scores.J / 5) * 100);
+            const aPercent = Math.round((scores.A / 5) * 100);
+            const hPercent = Math.round((scores.H / 5) * 100);
+            
+            dimensionCompare.innerHTML = `
+                <div class="compare-item">
+                    <div class="compare-label">代码风格</div>
+                    <div class="compare-value" style="color: ${scores.C >= scores.M ? '#58a6ff' : '#f0883e'}">
+                        ${scores.C >= scores.M ? 'C' : 'M'}
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                        ${scores.C >= scores.M ? '整洁派' : '实用派'}
+                    </div>
+                    <div class="compare-bar">
+                        <div class="compare-fill" style="width: ${scores.C >= scores.M ? cPercent : 100 - cPercent}%; background: ${scores.C >= scores.M ? '#58a6ff' : '#f0883e'}"></div>
+                    </div>
+                    <div style="font-size: 0.8rem; margin-top: 8px; color: var(--text-secondary);">
+                        ${scores.C}/5 vs ${scores.M}/5
+                    </div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-label">问题解决</div>
+                    <div class="compare-value" style="color: ${scores.L >= scores.I ? '#3fb950' : '#a371f7'}">
+                        ${scores.L >= scores.I ? 'L' : 'I'}
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                        ${scores.L >= scores.I ? '逻辑优先' : '直觉优先'}
+                    </div>
+                    <div class="compare-bar">
+                        <div class="compare-fill" style="width: ${scores.L >= scores.I ? lPercent : 100 - lPercent}%; background: ${scores.L >= scores.I ? '#3fb950' : '#a371f7'}"></div>
+                    </div>
+                    <div style="font-size: 0.8rem; margin-top: 8px; color: var(--text-secondary);">
+                        ${scores.L}/5 vs ${scores.I}/5
+                    </div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-label">团队协作</div>
+                    <div class="compare-value" style="color: ${scores.S >= scores.T ? '#f0883e' : '#3fb950'}">
+                        ${scores.S >= scores.T ? 'S' : 'T'}
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                        ${scores.S >= scores.T ? '独狼型' : '协作型'}
+                    </div>
+                    <div class="compare-bar">
+                        <div class="compare-fill" style="width: ${scores.S >= scores.T ? sPercent : 100 - sPercent}%; background: ${scores.S >= scores.T ? '#f0883e' : '#3fb950'}"></div>
+                    </div>
+                    <div style="font-size: 0.8rem; margin-top: 8px; color: var(--text-secondary);">
+                        ${scores.S}/5 vs ${scores.T}/5
+                    </div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-label">技术态度</div>
+                    <div class="compare-value" style="color: ${scores.J >= scores.P ? '#a371f7' : '#f85149'}">
+                        ${scores.J >= scores.P ? 'J' : 'P'}
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                        ${scores.J >= scores.P ? '稳定保守' : '先锋探索'}
+                    </div>
+                    <div class="compare-bar">
+                        <div class="compare-fill" style="width: ${scores.J >= scores.P ? jPercent : 100 - jPercent}%; background: ${scores.J >= scores.P ? '#a371f7' : '#f85149'}"></div>
+                    </div>
+                    <div style="font-size: 0.8rem; margin-top: 8px; color: var(--text-secondary);">
+                        ${scores.J}/5 vs ${scores.P}/5
+                    </div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-label">编程流派</div>
+                    <div class="compare-value" style="color: ${scores.A >= scores.N ? '#d4a574' : '#00d4aa'}">
+                        ${scores.A >= scores.N ? 'A' : 'N'}
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                        ${scores.A >= scores.N ? '古法编程 🧙' : '现代工具 🆚'}
+                    </div>
+                    <div class="compare-bar">
+                        <div class="compare-fill" style="width: ${scores.A >= scores.N ? aPercent : 100 - aPercent}%; background: ${scores.A >= scores.N ? '#d4a574' : '#00d4aa'}"></div>
+                    </div>
+                    <div style="font-size: 0.8rem; margin-top: 8px; color: var(--text-secondary);">
+                        ${scores.A}/5 vs ${scores.N}/5
+                    </div>
+                </div>
+                <div class="compare-item">
+                    <div class="compare-label">AI 态度</div>
+                    <div class="compare-value" style="color: ${scores.H >= scores.R ? '#ff6b9d' : '#00d9ff'}">
+                        ${scores.H >= scores.R ? 'H' : 'R'}
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                        ${scores.H >= scores.R ? '独立思考 🧠' : 'AI 协作 🤖'}
+                    </div>
+                    <div class="compare-bar">
+                        <div class="compare-fill" style="width: ${scores.H >= scores.R ? hPercent : 100 - hPercent}%; background: ${scores.H >= scores.R ? '#ff6b9d' : '#00d9ff'}"></div>
+                    </div>
+                    <div style="font-size: 0.8rem; margin-top: 8px; color: var(--text-secondary);">
+                        ${scores.H}/5 vs ${scores.R}/5
+                    </div>
+                </div>
+            `;
+            
+            // 特征网格
+            const traitsGrid = document.getElementById('traitsGrid');
+            traitsGrid.innerHTML = `
+                <div class="trait-card">
+                    <div class="trait-label">代码风格</div>
+                    <div class="trait-value">${scores.C >= scores.M ? '整洁派 🧹' : '实用派 🚀'}</div>
+                </div>
+                <div class="trait-card">
+                    <div class="trait-label">问题解决</div>
+                    <div class="trait-value">${scores.L >= scores.I ? '逻辑优先 🔬' : '直觉优先 🎯'}</div>
+                </div>
+                <div class="trait-card">
+                    <div class="trait-label">工作方式</div>
+                    <div class="trait-value">${scores.S >= scores.T ? '独狼型 🎧' : '协作型 👥'}</div>
+                </div>
+                <div class="trait-card">
+                    <div class="trait-label">技术态度</div>
+                    <div class="trait-value">${scores.J >= scores.P ? '稳定保守 🛡️' : '先锋探索 🔥'}</div>
+                </div>
+                <div class="trait-card">
+                    <div class="trait-label">编程流派</div>
+                    <div class="trait-value">${scores.A >= scores.N ? '古法编程 🧙' : '现代工具 🆚'}</div>
+                </div>
+                <div class="trait-card">
+                    <div class="trait-label">AI 态度</div>
+                    <div class="trait-value">${scores.H >= scores.R ? '独立思考 🧠' : 'AI 协作 🤖'}</div>
+                </div>
+            `;
+            
+            // 技术栈
+            const techStack = document.getElementById('techStack');
+            techStack.innerHTML = typeData.techStack.map(tech => 
+                `<span class="tag highlight">${tech}</span>`
+            ).join('');
+            
+            // 优势
+            const strengths = document.getElementById('strengths');
+            strengths.innerHTML = typeData.strengths.map(s => 
+                `<span class="tag">${s}</span>`
+            ).join('');
+            
+            // 弱点
+            const weaknesses = document.getElementById('weaknesses');
+            weaknesses.innerHTML = typeData.weaknesses.map(w => 
+                `<span class="tag">${w}</span>`
+            ).join('');
+            
+            // 名人
+            const celebrities = document.getElementById('celebrities');
+            celebrities.innerHTML = typeData.celebrities.map(c => `
+                <div class="celebrity-item">
+                    <div class="celebrity-avatar">${c.avatar}</div>
+                    <div>
+                        <div style="font-weight: 600;">${c.name}</div>
+                        <div style="font-size: 0.85rem; color: var(--text-secondary);">${c.role}</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // 滚动到顶部
+            window.scrollTo(0, 0);
+        }
+
+        // 绘制雷达图
+        function drawRadarChart() {
+            const canvas = document.getElementById('radarChart');
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 90;
+            
+            // 清空画布
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 六个维度的标签
+            const labels = ['代码风格', '问题解决', '团队协作', '技术态度', '古法编程', 'AI态度'];
+            const angles = [0, Math.PI / 3, 2 * Math.PI / 3, Math.PI, 4 * Math.PI / 3, 5 * Math.PI / 3];
+            
+            // 绘制背景网格
+            ctx.strokeStyle = '#30363d';
+            ctx.lineWidth = 1;
+            
+            // 绘制同心六边形
+            for (let i = 1; i <= 5; i++) {
+                ctx.beginPath();
+                const r = (radius / 5) * i;
+                angles.forEach((angle, index) => {
+                    const x = centerX + Math.cos(angle) * r;
+                    const y = centerY + Math.sin(angle) * r;
+                    if (index === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                });
+                ctx.closePath();
+                ctx.stroke();
+            }
+            
+            // 绘制轴线
+            angles.forEach(angle => {
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(
+                    centerX + Math.cos(angle) * radius,
+                    centerY + Math.sin(angle) * radius
+                );
+                ctx.stroke();
+            });
+            
+            // 绘制标签
+            ctx.fillStyle = '#8b949e';
+            ctx.font = '11px JetBrains Mono';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            labels.forEach((label, index) => {
+                const angle = angles[index];
+                const labelRadius = radius + 30;
+                const x = centerX + Math.cos(angle) * labelRadius;
+                const y = centerY + Math.sin(angle) * labelRadius;
+                ctx.fillText(label, x, y);
+            });
+            
+            // 计算数据点 (使用实际得分)
+            const cValue = (scores.C / 5) * radius;
+            const lValue = (scores.L / 5) * radius;
+            const sValue = (scores.S / 5) * radius;
+            const jValue = (scores.J / 5) * radius;
+            const aValue = (scores.A / 5) * radius;
+            const hValue = (scores.H / 5) * radius;
+            
+            const dataPoints = [
+                { x: centerX + Math.cos(angles[0]) * cValue, y: centerY + Math.sin(angles[0]) * cValue, value: scores.C },
+                { x: centerX + Math.cos(angles[1]) * lValue, y: centerY + Math.sin(angles[1]) * lValue, value: scores.L },
+                { x: centerX + Math.cos(angles[2]) * sValue, y: centerY + Math.sin(angles[2]) * sValue, value: scores.S },
+                { x: centerX + Math.cos(angles[3]) * jValue, y: centerY + Math.sin(angles[3]) * jValue, value: scores.J },
+                { x: centerX + Math.cos(angles[4]) * aValue, y: centerY + Math.sin(angles[4]) * aValue, value: scores.A },
+                { x: centerX + Math.cos(angles[5]) * hValue, y: centerY + Math.sin(angles[5]) * hValue, value: scores.H }
+            ];
+            
+            // 绘制数据区域
+            ctx.beginPath();
+            ctx.moveTo(dataPoints[0].x, dataPoints[0].y);
+            dataPoints.forEach((point, index) => {
+                if (index > 0) {
+                    ctx.lineTo(point.x, point.y);
+                }
+            });
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(88, 166, 255, 0.3)';
+            ctx.fill();
+            ctx.strokeStyle = '#58a6ff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 绘制数据点
+            dataPoints.forEach(point => {
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, 5, 0, Math.PI * 2);
+                ctx.fillStyle = '#58a6ff';
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            });
+            
+            // 绘制数值
+            ctx.fillStyle = '#e6edf3';
+            ctx.font = 'bold 10px JetBrains Mono';
+            dataPoints.forEach((point) => {
+                const offsetX = point.x > centerX ? 12 : -12;
+                const offsetY = point.y > centerY ? 12 : -12;
+                ctx.fillText(point.value.toString(), point.x + offsetX, point.y + offsetY);
+            });
+        }
+
+        function restartQuiz() {
+            document.getElementById('result').style.display = 'none';
+            document.getElementById('home').style.display = 'block';
+        }
+
+        function shareResult() {
+            const type = document.getElementById('typeBadge').textContent;
+            const name = document.getElementById('typeName').textContent;
+            const text = `我的程序员MBTI类型是 ${type} - ${name}！来测测你的代码人格吧！`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: '程序员MBTI测试',
+                    text: text,
+                    url: window.location.href
+                });
+            } else {
+                // 复制到剪贴板
+                navigator.clipboard.writeText(text + ' ' + window.location.href).then(() => {
+                    alert('结果已复制到剪贴板！');
+                });
+            }
+        }
+
+        function showTypes() {
+            alert('16种程序员人格类型:\n\n' + 
+                'CLST - 完美架构师\n' +
+                'CLSP - 创新极客\n' +
+                'CLTJ - 协作专家\n' +
+                'CLTP - 社交黑客\n' +
+                'CISJ - 独立工匠\n' +
+                'CISP - 独狼探索者\n' +
+                'CITJ - 逻辑导师\n' +
+                'CITP - 灵感领袖\n' +
+                'MLST - 务实工程师\n' +
+                'MLSP - 敏捷黑客\n' +
+                'MLTJ - 团队粘合剂\n' +
+                'MLTP - 派对程序员\n' +
+                'MISJ - 孤胆侠客\n' +
+                'MISP - 荒野猎人\n' +
+                'MITJ - 实战导师\n' +
+                'MITP - 变革推动者\n\n' +
+                '开始测试发现你的类型！');
+        }
+    </script>
+</body>
+</html>

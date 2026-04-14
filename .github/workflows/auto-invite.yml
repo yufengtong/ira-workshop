@@ -1,0 +1,112 @@
+# =============================================================
+# Auto Invite: PR 提交者自动邀请为 Collaborator
+# =============================================================
+# 触发条件：新 PR 创建时自动检查并邀请
+# 前置要求：在仓库 Settings → Secrets → Actions 中添加
+#           名为 ADMIN_TOKEN 的 Secret（需要 repo 权限的 PAT）
+# =============================================================
+
+name: "Auto Invite PR Authors"
+
+on:
+  pull_request_target:
+    types: [opened]
+
+  # 支持手动触发（补邀历史 PR 作者）
+  workflow_dispatch:
+
+permissions:
+  pull-requests: read
+
+jobs:
+  invite:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Invite PR Author as Collaborator"
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ADMIN_TOKEN }}
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // ========== 确定要邀请的用户列表 ==========
+            let usersToInvite = [];
+
+            if (context.eventName === 'pull_request_target') {
+              // PR 触发：只处理当前 PR 作者
+              const prAuthor = context.payload.pull_request.user.login;
+              console.log(`🔍 新 PR #${context.payload.pull_request.number} by ${prAuthor}`);
+              usersToInvite = [prAuthor];
+            } else {
+              // 手动触发：扫描所有历史 PR 作者
+              console.log('📋 手动触发：扫描所有 PR 作者...');
+              const pulls = await github.paginate(github.rest.pulls.list, {
+                owner, repo, state: 'all', per_page: 100,
+              });
+              const authors = [...new Set(pulls.map(pr => pr.user.login))];
+              usersToInvite = authors;
+              console.log(`   找到 ${authors.length} 位 PR 作者`);
+            }
+
+            // ========== 获取现有 Collaborator ==========
+            let existingCollabs = new Set();
+            try {
+              const collabs = await github.paginate(github.rest.repos.listCollaborators, {
+                owner, repo, per_page: 100,
+              });
+              existingCollabs = new Set(collabs.map(c => c.login));
+              console.log(`📋 现有 ${existingCollabs.size} 位 Collaborator`);
+            } catch (e) {
+              console.log(`⚠️ 获取 Collaborator 列表失败: ${e.message}`);
+            }
+
+            // ========== 过滤并邀请 ==========
+            let invited = 0, skipped = 0, failed = 0;
+
+            for (const username of usersToInvite) {
+              // 跳过仓库 owner
+              if (username === owner) {
+                console.log(`   ⏭️ ${username} 是仓库 Owner，跳过`);
+                skipped++;
+                continue;
+              }
+
+              // 跳过已有成员
+              if (existingCollabs.has(username)) {
+                console.log(`   ⏭️ ${username} 已是 Collaborator`);
+                skipped++;
+                continue;
+              }
+
+              // 发送邀请
+              try {
+                await github.rest.repos.addCollaborator({
+                  owner, repo,
+                  username,
+                  permission: 'push',
+                });
+                console.log(`   ✅ ${username} → 邀请已发送`);
+                invited++;
+
+                // 可选：在 PR 上留言通知
+                if (context.eventName === 'pull_request_target') {
+                  try {
+                    await github.rest.issues.createComment({
+                      owner, repo,
+                      issue_number: context.payload.pull_request.number,
+                      body: `👋 @${username} 感谢提交 PR！我们已向你发送 Collaborator 邀请，请检查 GitHub 通知或邮箱并接受邀请。\n\n接受后你将获得仓库的 push 权限，可以直接推送代码。`,
+                    });
+                  } catch (e) {
+                    // 评论失败不影响主流程
+                  }
+                }
+              } catch (e) {
+                console.log(`   ❌ ${username} → ${e.message}`);
+                failed++;
+              }
+            }
+
+            console.log(`\n${'='.repeat(50)}`);
+            console.log(`📊 结果: ${invited} 邀请, ${skipped} 跳过, ${failed} 失败`);
+            console.log(`${'='.repeat(50)}`);

@@ -1,0 +1,118 @@
+# =============================================================
+# Workshop Auto-Merge: 自动合并无冲突的 PR
+# =============================================================
+# 触发条件：
+#   1. 新 PR 创建 / 更新 / 重新打开时自动尝试合并
+#   2. 每 2 分钟定时扫描所有 Open PR 并尝试合并
+#   3. 手动触发 (Actions 页面点 "Run workflow")
+# =============================================================
+
+name: "Auto Merge Workshop PRs"
+
+on:
+  # 当有新 PR 或 PR 更新时触发
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+  # 定时扫描：每 2 分钟跑一次
+  schedule:
+    - cron: "*/2 * * * *"
+
+  # 支持手动触发
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Auto Merge All Mergeable PRs"
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // 获取所有 Open 状态的 PR（按创建时间升序，先提交先合并）
+            const { data: pulls } = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: 'open',
+              sort: 'created',
+              direction: 'asc',
+              per_page: 100,
+            });
+
+            console.log(`📋 Found ${pulls.length} open PR(s)`);
+
+            let merged = 0;
+            let skipped = 0;
+            let failed = 0;
+
+            for (const pr of pulls) {
+              console.log(`\n🔍 Checking PR #${pr.number}: ${pr.title}`);
+
+              // 获取 PR 详情（包含 mergeable 状态）
+              let mergeable = null;
+              for (let attempt = 0; attempt < 5; attempt++) {
+                const { data: detail } = await github.rest.pulls.get({
+                  owner,
+                  repo,
+                  pull_number: pr.number,
+                });
+                mergeable = detail.mergeable;
+                if (mergeable !== null) break;
+                // GitHub 还在计算 mergeability，等 3 秒重试
+                console.log(`   ⏳ Waiting for mergeability check (attempt ${attempt + 1}/5)...`);
+                await new Promise(r => setTimeout(r, 3000));
+              }
+
+              if (mergeable === false) {
+                console.log(`   ⚠️  PR #${pr.number} has conflicts — skipped`);
+                // 给有冲突的 PR 添加评论提醒
+                try {
+                  await github.rest.issues.createComment({
+                    owner,
+                    repo,
+                    issue_number: pr.number,
+                    body: `⚠️ **Auto-Merge 检测到冲突**\n\n该 PR 与 main 分支存在冲突，无法自动合并。\n请在本地执行以下命令解决冲突后重新推送：\n\n\`\`\`bash\ngit fetch upstream\ngit rebase upstream/main\n# 解决冲突后\ngit push --force-with-lease\n\`\`\``,
+                  });
+                } catch (e) {
+                  // 忽略评论失败
+                }
+                skipped++;
+                continue;
+              }
+
+              if (mergeable === null) {
+                console.log(`   ❓ PR #${pr.number} mergeability unknown — skipped`);
+                skipped++;
+                continue;
+              }
+
+              // 可合并，执行 merge
+              try {
+                await github.rest.pulls.merge({
+                  owner,
+                  repo,
+                  pull_number: pr.number,
+                  merge_method: 'merge',
+                  commit_title: `Merge PR #${pr.number}: ${pr.title}`,
+                });
+                console.log(`   ✅ PR #${pr.number} merged successfully!`);
+                merged++;
+
+                // 合并后等待 2 秒，让 GitHub 更新 main 分支状态
+                await new Promise(r => setTimeout(r, 2000));
+              } catch (error) {
+                console.log(`   ❌ PR #${pr.number} merge failed: ${error.message}`);
+                failed++;
+              }
+            }
+
+            console.log(`\n${'='.repeat(50)}`);
+            console.log(`📊 Summary: ${merged} merged, ${skipped} skipped, ${failed} failed`);
+            console.log(`${'='.repeat(50)}`);

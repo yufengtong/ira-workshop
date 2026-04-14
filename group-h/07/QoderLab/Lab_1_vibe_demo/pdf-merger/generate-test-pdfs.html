@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生成测试PDF</title>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://unpkg.com/downloadjs@1.4.7/download.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #45a049;
+        }
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .log {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .success {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📄 测试PDF生成器</h1>
+        <p style="text-align: center; color: #666;">点击下方按钮生成4个测试PDF文件</p>
+        <button class="btn" id="generateBtn" onclick="generateAllPdfs()">
+            生成所有测试PDF
+        </button>
+        <div class="log" id="log"></div>
+    </div>
+
+    <script>
+        const { PDFDocument, rgb, StandardFonts } = PDFLib;
+
+        function log(message, isSuccess = false) {
+            const logDiv = document.getElementById('log');
+            const className = isSuccess ? 'success' : '';
+            logDiv.innerHTML += `<div class="${className}">${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function createPdf1() {
+            const pdfDoc = await PDFDocument.create();
+            const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+            // 第1页
+            let page1 = pdfDoc.addPage([595.28, 841.89]);
+            page1.drawText('测试文档 1 - 项目介绍', {
+                x: 50,
+                y: 800,
+                size: 24,
+                font: font,
+                color: rgb(0, 0, 0),
+            });
+            page1.drawText('这是一个关于PDF合并工具的测试文档。\n\n功能特点：\n- 支持拖拽导入PDF文件\n- 支持批量导入\n- 支持拖拽排序\n- 支持删除不需要的文件\n- 按顺序合并PDF\n\n作者：AI Assistant\n日期：2026年4月', {
+                x: 50,
+                y: 720,
+                size: 14,
+                font: font,
+                color: rgb(0.2, 0.2, 0.2),
+                lineHeight: 24,
+            });
+
+            // 第2页
+            let page2 = pdfDoc.addPage([595.28, 841.89]);
+            page2.drawText('测试文档 1 - 第2页', {
+                x: 50,
+                y: 800,
+                size: 20,
+                font: font,
+                color: rgb(0, 0, 0),
+            });
+            page2.drawText('这是第一份文档的第二页内容。\n\n技术栈：\n- React 18\n- TypeScript\n- Vite\n- pdf-lib\n- @dnd-kit\n- TailwindCSS\n\n这个工具可以帮助用户轻松合并多个PDF文件，\n操作简单，界面美观。', {
+                x: 50,
+                y: 720,
+                size: 14,
+                font: font,
+                color: rgb(0.2, 0.2, 0.2),
+                lineHeight: 24,
+            });
+
+            const pdfBytes = await pdfDoc.save();
+            download(pdfBytes, '01-项目介绍.pdf', 'application/pdf');
+            log('✓ 已下载: 01-项目介绍.pdf (2页)', true);
+        }
+
+        async function createPdf2() {
+            const pdfDoc = await PDFDocument.create();
+            const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+            // 第1页
+            let page1 = pdfDoc.addPage([595.28, 841.89]);
+            page1.drawText('测试文档 2 - 用户手册', {
+                x: 50,
+                y: 800,
+                size: 24,
+                font: font,
+                color: rgb(0, 0, 0),
+            });
+            page1.drawText('使用指南：\n\n1. 打开PDF合并工具\n2. 拖拽PDF文件到页面\n   或点击选择文件\n3. 调整文件顺序\n4. 点击"合并PDF"按钮\n5. 下载合并后的文件\n\n注意事项：\n- 至少需要2个PDF文件\n- 文件大小无限制\n- 所有操作在本地完成', {
+                x: 50,
+                y: 720,
+                size: 14,
+                font: font,
+                color: rgb(0.2, 0.2, 0.2),
+                lineHeight: 24,
+            });
+
+            // 第2页
+            let page2 = pdfDoc.addPage([595.28, 841.89]);
+            page2.drawText('测试文档 2 - 第2页', {
+                x: 50,
+                y: 800,
+                size: 20,
+                font: font,
+                color: rgb(0, 0, 0),
+            });
+            page2.drawText('这是用户手册的第二页。\n\n常见问题：\n\nQ: 支持哪些文件格式？\nA: 仅支持PDF格式\n\nQ: 合并后会丢失内容吗？\nA: 不会，完整保留所有内容\n\nQ: 可以调整页面顺序吗？\nA: 可以，通过拖拽调整', {
+                x: 50,
+                y: 720,
+                size: 14,
+                font: font,
+                color: rgb(0.2, 0.2, 0.2),
+                lineHeight: 24,
+            });
+
+            // 第3页
+            let page3 = pdfDoc.addPage([595.28, 841.89]);
+            page3.drawText('测试文档 2 - 第3页', {
+                x: 50,
+                y: 800,
+                size: 20,
+                font: font,
+                color: rgb(0, 0, 0),
+            });
+            page3.drawText('这是用户手册的第三页。\n\n快捷键说明：\n\n- Delete: 删除选中的文件\n- Ctrl+Z: 撤销操作\n- Ctrl+S: 保存合并后的文件\n\n技术支持：\n如有问题，请联系技术支持团队。', {
+                x: 50,
+                y: 720,
+                size: 14,
+                font: font,
+                color: rgb(0.2, 0.2, 0.2),
+                lineHeight: 24,
+            });
+
+            const pdfBytes = await pdfDoc.save();
+            download(pdfBytes, '02-用户手册.pdf', 'application/pdf');
+            log('✓ 已下载: 02-用户手册.pdf (3页)', true);
+        }
+
+        async function createPdf3() {
+            const pdfDoc = await PDFDocument.create();
+            const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+            let page = pdfDoc.addPage([595.28, 841.89]);
+            page.drawText('测试文档 3 - 技术规格', {
+                x: 50,
+                y: 800,
+                size: 24,
+                font: font,
+                color: rgb(0, 0, 0),
+            });
+            page.drawText('系统要求：\n\n- 现代浏览器（Chrome, Firefox, Edge）\n- 启用JavaScript\n- 至少512MB可用内存\n\n性能指标：\n- 支持最多100个PDF文件\n- 单个文件最大500MB\n- 合并速度：约10页/秒\n\n安全性：\n- 所有处理在浏览器本地完成\n- 不上传任何数据到服务器\n- 保护用户隐私', {
+                x: 50,
+                y: 720,
+                size: 14,
+                font: font,
+                color: rgb(0.2, 0.2, 0.2),
+                lineHeight: 24,
+            });
+
+            const pdfBytes = await pdfDoc.save();
+            download(pdfBytes, '03-技术规格.pdf', 'application/pdf');
+            log('✓ 已下载: 03-技术规格.pdf (1页)', true);
+        }
+
+        async function createPdf4() {
+            const pdfDoc = await PDFDocument.create();
+            const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+
+            let page = pdfDoc.addPage([595.28, 841.89]);
+            page.drawText('测试文档 4 - 版本历史', {
+                x: 50,
+                y: 800,
+                size: 24,
+                font: font,
+                color: rgb(0, 0, 0),
+            });
+            page.drawText('版本记录：\n\nv1.0.0 (2026-04-13)\n- 初始版本发布\n- 支持基本的PDF合并功能\n- 拖拽排序功能\n- 批量导入支持\n\nv1.1.0 (计划中)\n- 添加PDF预览功能\n- 支持页面级别的删除\n- 添加撤销/重做功能\n\nv2.0.0 (计划中)\n- 支持PDF编辑\n- 添加水印功能\n- 支持PDF压缩', {
+                x: 50,
+                y: 720,
+                size: 14,
+                font: font,
+                color: rgb(0.2, 0.2, 0.2),
+                lineHeight: 24,
+            });
+
+            const pdfBytes = await pdfDoc.save();
+            download(pdfBytes, '04-版本历史.pdf', 'application/pdf');
+            log('✓ 已下载: 04-版本历史.pdf (1页)', true);
+        }
+
+        async function generateAllPdfs() {
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            btn.textContent = '生成中...';
+            document.getElementById('log').innerHTML = '';
+
+            try {
+                log('开始生成测试PDF文件...\n');
+                
+                await createPdf1();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await createPdf2();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await createPdf3();
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await createPdf4();
+                
+                log('\n✅ 所有测试PDF生成完成！共4个文件，总计7页', true);
+                log('\n文件列表：');
+                log('  1. 01-项目介绍.pdf (2页)');
+                log('  2. 02-用户手册.pdf (3页)');
+                log('  3. 03-技术规格.pdf (1页)');
+                log('  4. 04-版本历史.pdf (1页)');
+            } catch (error) {
+                log('\n❌ 生成失败: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '生成所有测试PDF';
+            }
+        }
+    </script>
+</body>
+</html>

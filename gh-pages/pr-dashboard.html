@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>IRA Workshop · PR 提交统计</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f0f2f5;--card:#fff;--border:#e5e7eb;--text:#1f2937;--muted:#6b7280;
+  --blue:#3b82f6;--green:#10b981;--amber:#f59e0b;--red:#ef4444;--purple:#8b5cf6;--indigo:#6366f1;
+}
+body{font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;background:var(--bg);color:var(--text);font-size:13px;line-height:1.5}
+a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}
+
+.top-bar{background:linear-gradient(135deg,#1e293b 0%,#0f172a 100%);color:#fff;padding:14px 24px;display:flex;align-items:center;gap:24px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}
+.top-bar .logo{font-size:18px;font-weight:700;letter-spacing:-.5px}
+.top-bar .logo span{color:var(--amber)}
+.top-bar .meta-right{margin-left:auto;font-size:12px;color:#64748b;display:flex;align-items:center;gap:12px}
+.time-badge{background:rgba(255,255,255,.1);padding:4px 12px;border-radius:20px;font-size:11px;color:#94a3b8}
+.btn{background:var(--blue);color:#fff;border:none;padding:7px 16px;border-radius:6px;font-size:12px;cursor:pointer;transition:.2s}
+.btn:hover{background:#2563eb}
+
+.tabs{display:flex;gap:0;background:#fff;border-bottom:1px solid var(--border);padding:0 24px;position:sticky;top:52px;z-index:90}
+.tab{padding:12px 20px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:.2s}
+.tab:hover{color:var(--text)}.tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.panel{display:none;padding:20px 24px;max-width:1400px;margin:0 auto}.panel.active{display:block}
+
+/* Summary cards */
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:24px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;transition:.2s}
+.stat-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.stat-card .label{font-size:11px;font-weight:600;color:var(--muted);margin-bottom:4px;text-transform:uppercase}
+.stat-card .value{font-size:28px;font-weight:800}
+.stat-card .sub{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* Group cards */
+.group-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:24px}
+.group-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;transition:.2s}
+.group-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08);transform:translateY(-2px)}
+.group-card .rank{position:absolute;top:12px;right:16px;font-size:28px;font-weight:800;color:#e5e7eb}
+.group-card .rank.top1{color:var(--amber)}.group-card .rank.top2{color:#94a3b8}.group-card .rank.top3{color:#cd7f32}
+.group-card .group-name{font-size:16px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.group-card .group-stats{display:flex;gap:16px;margin-bottom:10px;font-size:12px;color:var(--muted)}
+.group-card .group-stats b{color:var(--text)}
+.progress-bar{height:8px;background:#f1f5f9;border-radius:4px;overflow:hidden;margin-top:4px}
+.progress-bar .fill{height:100%;border-radius:4px;transition:width .6s ease}
+.member-list{margin-top:10px;font-size:12px}
+.member-item{display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid #f1f5f9}
+.member-item:last-child{border:none}
+.member-item img{width:20px;height:20px;border-radius:50%}
+.member-item .name{flex:1}
+.member-item .count{font-weight:700;color:var(--blue)}
+
+/* Table */
+.data-table{width:100%;border-collapse:collapse;background:var(--card);border-radius:10px;overflow:hidden;border:1px solid var(--border)}
+.data-table th{background:#f8fafc;padding:10px 14px;text-align:left;font-size:12px;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap}
+.data-table td{padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px}
+.data-table tr:hover{background:#f8fafc}
+
+/* Status badges */
+.badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-merged{background:#dbeafe;color:#1d4ed8}
+.badge-open{background:#dcfce7;color:#166534}
+.badge-closed{background:#fee2e2;color:#991b1b}
+
+/* Timeline */
+.timeline-chart{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:24px}
+.timeline-bars{display:flex;align-items:flex-end;gap:3px;height:140px}
+.timeline-bar{flex:1;border-radius:3px 3px 0 0;min-width:20px;transition:height .4s ease;position:relative;cursor:pointer;display:flex;flex-direction:column;justify-content:flex-end}
+.timeline-bar .bar-merged{background:var(--blue);border-radius:3px 3px 0 0}
+.timeline-bar .bar-open{background:var(--green)}
+.timeline-bar .bar-closed{background:var(--red)}
+.timeline-bar:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:4px 10px;border-radius:4px;font-size:11px;white-space:nowrap;z-index:10}
+.timeline-labels{display:flex;gap:3px;padding:6px 0 0;font-size:10px;color:var(--muted)}
+.timeline-labels span{flex:1;min-width:20px;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.legend{display:flex;gap:16px;margin-bottom:10px;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:middle;margin-right:4px}
+
+.hint-box{background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#1e40af}
+.loading{text-align:center;padding:40px;color:var(--muted);font-size:14px}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state .icon{font-size:48px;margin-bottom:12px}
+
+/* Student ranking table */
+.student-rank{counter-reset:student}
+.student-rank tr td:first-child::before{counter-increment:student;content:counter(student);font-weight:700;color:var(--muted)}
+
+.filter-bar{display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.filter-bar select,.filter-bar input{padding:6px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;background:#fff}
+
+@media(max-width:768px){
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .group-grid{grid-template-columns:1fr}
+  .tabs{overflow-x:auto}
+  .panel{padding:12px}
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo"><span>IRA</span> Workshop · PR Dashboard</div>
+  <div class="meta-right">
+    <span class="time-badge" id="last-update">加载中...</span>
+    <button class="btn" onclick="refreshData()">🔄 刷新</button>
+    <a href="https://github.com/lvzhaobo/ira-workshop" target="_blank" style="color:#94a3b8;font-size:12px">GitHub ↗</a>
+  </div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="overview">📊 总览</div>
+  <div class="tab" data-tab="group-detail">👥 小组统计</div>
+  <div class="tab" data-tab="student-detail">🧑‍💻 个人统计</div>
+  <div class="tab" data-tab="pr-timeline">📈 提交趋势</div>
+  <div class="tab" data-tab="pr-list">📋 PR 列表</div>
+</div>
+
+<!-- ========== 总览 ========== -->
+<div class="panel active" id="overview">
+  <div class="stat-grid" id="summary-stats">
+    <div class="stat-card"><div class="label">总 PR 数</div><div class="value" id="s-total" style="color:var(--blue)">—</div></div>
+    <div class="stat-card"><div class="label">已合并</div><div class="value" id="s-merged" style="color:var(--green)">—</div></div>
+    <div class="stat-card"><div class="label">待合并 (Open)</div><div class="value" id="s-open" style="color:var(--amber)">—</div></div>
+    <div class="stat-card"><div class="label">已关闭</div><div class="value" id="s-closed" style="color:var(--red)">—</div></div>
+    <div class="stat-card"><div class="label">参与小组</div><div class="value" id="s-groups" style="color:var(--purple)">—</div></div>
+    <div class="stat-card"><div class="label">参与人数</div><div class="value" id="s-students" style="color:var(--indigo)">—</div></div>
+  </div>
+  <h3 style="font-size:14px;font-weight:600;margin-bottom:12px">🏆 小组 PR 排行</h3>
+  <div class="group-grid" id="group-ranking"><div class="loading">加载中...</div></div>
+  <h3 style="font-size:14px;font-weight:600;margin-bottom:12px">🧑‍💻 个人 PR 排行 TOP 15</h3>
+  <div id="top-students"><div class="loading">加载中...</div></div>
+</div>
+
+<!-- ========== 小组统计 ========== -->
+<div class="panel" id="group-detail">
+  <div class="filter-bar">
+    <select id="group-filter"><option value="all">全部小组</option></select>
+  </div>
+  <div id="group-detail-content"><div class="loading">加载中...</div></div>
+</div>
+
+<!-- ========== 个人统计 ========== -->
+<div class="panel" id="student-detail">
+  <div class="filter-bar">
+    <select id="student-group-filter"><option value="all">全部小组</option></select>
+    <input type="text" id="student-search" placeholder="搜索用户名..." style="flex:1;max-width:240px"/>
+  </div>
+  <div id="student-table-wrap"><div class="loading">加载中...</div></div>
+</div>
+
+<!-- ========== 提交趋势 ========== -->
+<div class="panel" id="pr-timeline">
+  <div class="legend">
+    <span><i style="background:var(--blue)"></i> 已合并</span>
+    <span><i style="background:var(--green)"></i> Open</span>
+    <span><i style="background:var(--red)"></i> 已关闭</span>
+  </div>
+  <div class="timeline-chart">
+    <h4 style="font-size:13px;font-weight:600;margin-bottom:12px">每日 PR 提交数量</h4>
+    <div class="timeline-bars" id="daily-chart"><div class="loading">加载中...</div></div>
+    <div class="timeline-labels" id="daily-labels"></div>
+  </div>
+  <div class="timeline-chart">
+    <h4 style="font-size:13px;font-weight:600;margin-bottom:12px">每小时 PR 分布 (合并时间)</h4>
+    <div class="timeline-bars" id="hourly-chart"><div class="loading">加载中...</div></div>
+    <div class="timeline-labels" id="hourly-labels"></div>
+  </div>
+</div>
+
+<!-- ========== PR 列表 ========== -->
+<div class="panel" id="pr-list">
+  <div class="filter-bar">
+    <select id="pr-status-filter">
+      <option value="all">全部状态</option>
+      <option value="merged">已合并</option>
+      <option value="open">Open</option>
+      <option value="closed">已关闭</option>
+    </select>
+    <select id="pr-group-filter"><option value="all">全部小组</option></select>
+    <input type="text" id="pr-search" placeholder="搜索 PR 标题或作者..." style="flex:1;max-width:300px"/>
+    <span style="font-size:12px;color:var(--muted)" id="pr-count-label"></span>
+  </div>
+  <div id="pr-table-wrap"><div class="loading">加载中...</div></div>
+</div>
+
+<script>
+const REPO = 'lvzhaobo/ira-workshop';
+const API = 'https://api.github.com';
+const GROUPS = ['group-a','group-b','group-c','group-d','group-e','group-f','group-g','group-h','group-i','group-j'];
+const GROUP_LABELS = {'group-a':'A 组','group-b':'B 组','group-c':'C 组','group-d':'D 组','group-e':'E 组','group-f':'F 组','group-g':'G 组','group-h':'H 组','group-i':'I 组','group-j':'J 组'};
+const GROUP_COLORS = {'group-a':'#3b82f6','group-b':'#10b981','group-c':'#f59e0b','group-d':'#ef4444','group-e':'#8b5cf6','group-f':'#ec4899','group-g':'#14b8a6','group-h':'#f97316','group-i':'#6366f1','group-j':'#84cc16'};
+
+let allPRs = [];
+
+// ===================== Tab 切换 =====================
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById(t.dataset.tab).classList.add('active');
+  });
+});
+
+// ===================== GitHub API =====================
+async function ghFetchAll(path, max = 500) {
+  let all = [], page = 1;
+  while (all.length < max) {
+    const sep = path.includes('?') ? '&' : '?';
+    const r = await fetch(`${API}${path}${sep}per_page=100&page=${page}`, {
+      headers: { 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (!r.ok) { console.error(`API error ${r.status} for ${path}`); break; }
+    const d = await r.json();
+    if (!d.length) break;
+    all = all.concat(d);
+    if (d.length < 100) break;
+    page++;
+  }
+  return all.slice(0, max);
+}
+
+// ===================== 解析 PR 所属小组 =====================
+function detectGroup(pr) {
+  // 优先从 head branch 判断
+  const branch = (pr.head && pr.head.ref) || '';
+  for (const g of GROUPS) {
+    if (branch.toLowerCase().startsWith(g)) return g;
+  }
+  // 从标题判断
+  const title = (pr.title || '').toLowerCase();
+  for (const g of GROUPS) {
+    if (title.includes(g) || title.includes(g.replace('group-', ''))) return g;
+  }
+  // 从 labels 判断
+  if (pr.labels) {
+    for (const label of pr.labels) {
+      const ln = label.name.toLowerCase();
+      for (const g of GROUPS) {
+        if (ln.includes(g)) return g;
+      }
+    }
+  }
+  return 'unknown';
+}
+
+function prStatus(pr) {
+  if (pr.merged_at || (pr.pull_request && pr.pull_request.merged_at)) return 'merged';
+  if (pr.state === 'closed') return 'closed';
+  return 'open';
+}
+
+function timeAgo(dateStr) {
+  if (!dateStr) return '—';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return '刚刚';
+  if (mins < 60) return `${mins} 分钟前`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs} 小时前`;
+  const days = Math.floor(hrs / 24);
+  return `${days} 天前`;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—';
+  return new Date(dateStr).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+}
+
+// ===================== 数据加载 =====================
+async function loadAllPRs() {
+  document.getElementById('last-update').textContent = '加载中...';
+  try {
+    // 获取所有 PR（包含 open + closed + merged）
+    const [openPRs, closedPRs] = await Promise.all([
+      ghFetchAll(`/repos/${REPO}/pulls?state=open`),
+      ghFetchAll(`/repos/${REPO}/pulls?state=closed`),
+    ]);
+    allPRs = [...openPRs, ...closedPRs];
+    // 按创建时间降序
+    allPRs.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+    document.getElementById('last-update').textContent = `已加载 ${allPRs.length} 条 PR · ${new Date().toLocaleTimeString('zh-CN')}`;
+    renderAll();
+  } catch (e) {
+    console.error('Load failed:', e);
+    document.getElementById('last-update').textContent = `加载失败: ${e.message}`;
+    document.getElementById('summary-stats').innerHTML = `<div class="hint-box" style="grid-column:1/-1">⚠️ 加载失败: ${e.message}。GitHub API 对未认证请求限制 60次/小时，可稍后重试。</div>`;
+  }
+}
+
+function refreshData() { loadAllPRs(); }
+
+// ===================== 渲染所有 =====================
+function renderAll() {
+  renderOverview();
+  renderGroupDetail();
+  renderStudentDetail();
+  renderTimeline();
+  renderPRList();
+  populateFilters();
+}
+
+// ===================== 总览面板 =====================
+function renderOverview() {
+  const merged = allPRs.filter(p => prStatus(p) === 'merged');
+  const open = allPRs.filter(p => prStatus(p) === 'open');
+  const closed = allPRs.filter(p => prStatus(p) === 'closed');
+
+  document.getElementById('s-total').textContent = allPRs.length;
+  document.getElementById('s-merged').textContent = merged.length;
+  document.getElementById('s-open').textContent = open.length;
+  document.getElementById('s-closed').textContent = closed.length;
+
+  // 小组统计
+  const groupMap = {};
+  allPRs.forEach(pr => {
+    const g = detectGroup(pr);
+    if (!groupMap[g]) groupMap[g] = { total: 0, merged: 0, open: 0, closed: 0, members: {} };
+    groupMap[g].total++;
+    const st = prStatus(pr);
+    groupMap[g][st]++;
+    const user = pr.user.login;
+    if (!groupMap[g].members[user]) groupMap[g].members[user] = { count: 0, avatar: pr.user.avatar_url };
+    groupMap[g].members[user].count++;
+  });
+
+  const activeGroups = Object.keys(groupMap).filter(g => g !== 'unknown');
+  document.getElementById('s-groups').textContent = activeGroups.length;
+
+  const allUsers = new Set(allPRs.map(p => p.user.login));
+  document.getElementById('s-students').textContent = allUsers.size;
+
+  // 小组排行（按 PR 总数排序）
+  const sortedGroups = Object.entries(groupMap)
+    .filter(([k]) => k !== 'unknown')
+    .sort((a, b) => b[1].total - a[1].total);
+  const maxTotal = sortedGroups.length ? sortedGroups[0][1].total : 1;
+
+  let groupHTML = '';
+  sortedGroups.forEach(([g, data], i) => {
+    const rc = i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : '';
+    const pct = Math.round(data.total / maxTotal * 100);
+    const members = Object.entries(data.members).sort((a, b) => b[1].count - a[1].count);
+    groupHTML += `<div class="group-card">
+      <div class="rank ${rc}">#${i + 1}</div>
+      <div class="group-name">${GROUP_LABELS[g] || g} <span style="font-size:12px;color:var(--muted)">(${data.total} PRs)</span></div>
+      <div class="group-stats">
+        <span>✅ 已合并 <b>${data.merged}</b></span>
+        <span>🟢 Open <b>${data.open}</b></span>
+        <span>🔴 Closed <b>${data.closed}</b></span>
+      </div>
+      <div class="progress-bar"><div class="fill" style="width:${pct}%;background:${GROUP_COLORS[g] || 'var(--blue)'}"></div></div>
+      <div class="member-list">${members.slice(0, 5).map(([name, m]) =>
+        `<div class="member-item"><img src="${m.avatar}" loading="lazy"/><span class="name">${name}</span><span class="count">${m.count}</span></div>`
+      ).join('')}${members.length > 5 ? `<div style="font-size:11px;color:var(--muted);padding-top:4px">...还有 ${members.length - 5} 人</div>` : ''}</div>
+    </div>`;
+  });
+
+  // unknown 组
+  if (groupMap['unknown']) {
+    groupHTML += `<div class="group-card" style="opacity:.7">
+      <div class="group-name">❓ 未分组 <span style="font-size:12px;color:var(--muted)">(${groupMap['unknown'].total} PRs)</span></div>
+      <div class="group-stats"><span>无法自动识别所属小组的 PR</span></div>
+    </div>`;
+  }
+  document.getElementById('group-ranking').innerHTML = groupHTML || '<div class="empty-state"><div class="icon">📊</div><p>暂无 PR 数据</p></div>';
+
+  // 个人 TOP 15
+  const userMap = {};
+  allPRs.forEach(pr => {
+    const u = pr.user.login;
+    if (!userMap[u]) userMap[u] = { total: 0, merged: 0, avatar: pr.user.avatar_url, group: detectGroup(pr) };
+    userMap[u].total++;
+    if (prStatus(pr) === 'merged') userMap[u].merged++;
+  });
+  const sortedUsers = Object.entries(userMap).sort((a, b) => b[1].total - a[1].total).slice(0, 15);
+  let uHTML = `<table class="data-table"><thead><tr><th style="width:40px">#</th><th></th><th>用户</th><th>小组</th><th style="text-align:center">总 PR</th><th style="text-align:center">已合并</th><th>活跃度</th></tr></thead><tbody>`;
+  sortedUsers.forEach(([name, d], i) => {
+    const pct = Math.round(d.total / (sortedUsers[0][1].total || 1) * 100);
+    uHTML += `<tr>
+      <td style="font-weight:700;color:${i < 3 ? 'var(--amber)' : 'var(--muted)'}">${i + 1}</td>
+      <td><img src="${d.avatar}" width="24" height="24" style="border-radius:50%" loading="lazy"/></td>
+      <td><a href="https://github.com/${name}" target="_blank">${name}</a></td>
+      <td>${GROUP_LABELS[d.group] || d.group}</td>
+      <td style="text-align:center;font-weight:700">${d.total}</td>
+      <td style="text-align:center">${d.merged}</td>
+      <td><div class="progress-bar" style="height:6px"><div class="fill" style="width:${pct}%;background:var(--blue)"></div></div></td>
+    </tr>`;
+  });
+  uHTML += '</tbody></table>';
+  document.getElementById('top-students').innerHTML = sortedUsers.length ? uHTML : '<div class="empty-state"><div class="icon">🧑‍💻</div><p>暂无数据</p></div>';
+}
+
+// ===================== 小组统计面板 =====================
+function renderGroupDetail(filterGroup = 'all') {
+  const groupMap = {};
+  allPRs.forEach(pr => {
+    const g = detectGroup(pr);
+    if (filterGroup !== 'all' && g !== filterGroup) return;
+    if (!groupMap[g]) groupMap[g] = [];
+    groupMap[g].push(pr);
+  });
+
+  let html = '';
+  const sortedGroups = Object.entries(groupMap).sort((a, b) => b[1].length - a[1].length);
+  sortedGroups.forEach(([g, prs]) => {
+    const merged = prs.filter(p => prStatus(p) === 'merged').length;
+    const open = prs.filter(p => prStatus(p) === 'open').length;
+    const closed = prs.filter(p => prStatus(p) === 'closed').length;
+    // 组内成员统计
+    const memberMap = {};
+    prs.forEach(pr => {
+      const u = pr.user.login;
+      if (!memberMap[u]) memberMap[u] = { total: 0, merged: 0, open: 0, closed: 0, avatar: pr.user.avatar_url, lastPR: pr.created_at };
+      memberMap[u].total++;
+      memberMap[u][prStatus(pr)]++;
+      if (new Date(pr.created_at) > new Date(memberMap[u].lastPR)) memberMap[u].lastPR = pr.created_at;
+    });
+    const members = Object.entries(memberMap).sort((a, b) => b[1].total - a[1].total);
+
+    html += `<div style="margin-bottom:32px">
+      <h3 style="font-size:15px;font-weight:700;margin-bottom:8px;color:${GROUP_COLORS[g] || 'var(--text)'}">${GROUP_LABELS[g] || g}
+        <span style="font-size:12px;font-weight:400;color:var(--muted);margin-left:8px">${prs.length} PRs · ${members.length} 人 · 合并率 ${prs.length ? Math.round(merged / prs.length * 100) : 0}%</span></h3>
+      <table class="data-table"><thead><tr>
+        <th>#</th><th></th><th>成员</th><th style="text-align:center">总 PR</th>
+        <th style="text-align:center">✅ 合并</th><th style="text-align:center">🟢 Open</th>
+        <th style="text-align:center">🔴 关闭</th><th>最近提交</th><th>活跃度</th>
+      </tr></thead><tbody>`;
+    members.forEach(([name, d], i) => {
+      const pct = Math.round(d.total / (members[0][1].total || 1) * 100);
+      html += `<tr>
+        <td style="font-weight:700;color:var(--muted)">${i + 1}</td>
+        <td><img src="${d.avatar}" width="22" height="22" style="border-radius:50%" loading="lazy"/></td>
+        <td><a href="https://github.com/${name}" target="_blank">${name}</a></td>
+        <td style="text-align:center;font-weight:700">${d.total}</td>
+        <td style="text-align:center;color:var(--green)">${d.merged}</td>
+        <td style="text-align:center;color:var(--amber)">${d.open}</td>
+        <td style="text-align:center;color:var(--red)">${d.closed}</td>
+        <td style="font-size:12px;color:var(--muted)">${timeAgo(d.lastPR)}</td>
+        <td><div class="progress-bar" style="height:6px"><div class="fill" style="width:${pct}%;background:${GROUP_COLORS[g] || 'var(--blue)'}"></div></div></td>
+      </tr>`;
+    });
+    html += '</tbody></table></div>';
+  });
+
+  document.getElementById('group-detail-content').innerHTML = html || '<div class="empty-state"><div class="icon">👥</div><p>暂无数据</p></div>';
+}
+
+// ===================== 个人统计面板 =====================
+function renderStudentDetail(filterGroup = 'all', search = '') {
+  const userMap = {};
+  allPRs.forEach(pr => {
+    const g = detectGroup(pr);
+    if (filterGroup !== 'all' && g !== filterGroup) return;
+    const u = pr.user.login;
+    if (search && !u.toLowerCase().includes(search.toLowerCase())) return;
+    if (!userMap[u]) userMap[u] = { total: 0, merged: 0, open: 0, closed: 0, avatar: pr.user.avatar_url, group: g, firstPR: pr.created_at, lastPR: pr.created_at };
+    userMap[u].total++;
+    userMap[u][prStatus(pr)]++;
+    if (new Date(pr.created_at) < new Date(userMap[u].firstPR)) userMap[u].firstPR = pr.created_at;
+    if (new Date(pr.created_at) > new Date(userMap[u].lastPR)) userMap[u].lastPR = pr.created_at;
+  });
+
+  const sorted = Object.entries(userMap).sort((a, b) => b[1].total - a[1].total);
+  let html = `<table class="data-table"><thead><tr>
+    <th>#</th><th></th><th>用户名</th><th>小组</th>
+    <th style="text-align:center">总 PR</th><th style="text-align:center">✅ 合并</th>
+    <th style="text-align:center">🟢 Open</th><th style="text-align:center">🔴 关闭</th>
+    <th style="text-align:center">合并率</th><th>首次提交</th><th>最近提交</th>
+  </tr></thead><tbody>`;
+  sorted.forEach(([name, d], i) => {
+    const rate = d.total ? Math.round(d.merged / d.total * 100) : 0;
+    const rateColor = rate >= 80 ? 'var(--green)' : rate >= 50 ? 'var(--amber)' : 'var(--red)';
+    html += `<tr>
+      <td style="font-weight:700;color:${i < 3 ? 'var(--amber)' : 'var(--muted)'}">${i + 1}</td>
+      <td><img src="${d.avatar}" width="22" height="22" style="border-radius:50%" loading="lazy"/></td>
+      <td><a href="https://github.com/${name}" target="_blank">${name}</a></td>
+      <td><span style="color:${GROUP_COLORS[d.group] || 'var(--muted)'};font-weight:600">${GROUP_LABELS[d.group] || d.group}</span></td>
+      <td style="text-align:center;font-weight:700">${d.total}</td>
+      <td style="text-align:center;color:var(--green)">${d.merged}</td>
+      <td style="text-align:center;color:var(--amber)">${d.open}</td>
+      <td style="text-align:center;color:var(--red)">${d.closed}</td>
+      <td style="text-align:center;font-weight:600;color:${rateColor}">${rate}%</td>
+      <td style="font-size:12px;color:var(--muted)">${formatDate(d.firstPR)}</td>
+      <td style="font-size:12px;color:var(--muted)">${timeAgo(d.lastPR)}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('student-table-wrap').innerHTML = sorted.length ? html : '<div class="empty-state"><div class="icon">🧑‍💻</div><p>暂无匹配数据</p></div>';
+}
+
+// ===================== 提交趋势 =====================
+function renderTimeline() {
+  // 按日期统计
+  const dayMap = {};
+  allPRs.forEach(pr => {
+    const day = pr.created_at.substring(0, 10);
+    if (!dayMap[day]) dayMap[day] = { merged: 0, open: 0, closed: 0 };
+    dayMap[day][prStatus(pr)]++;
+  });
+
+  const days = Object.keys(dayMap).sort();
+  if (!days.length) {
+    document.getElementById('daily-chart').innerHTML = '<div class="empty-state" style="padding:20px">暂无数据</div>';
+    return;
+  }
+
+  // 填充缺失日期
+  const allDays = [];
+  const start = new Date(days[0]);
+  const end = new Date(days[days.length - 1]);
+  for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    const key = d.toISOString().substring(0, 10);
+    allDays.push(key);
+    if (!dayMap[key]) dayMap[key] = { merged: 0, open: 0, closed: 0 };
+  }
+
+  const maxDay = Math.max(...allDays.map(d => dayMap[d].merged + dayMap[d].open + dayMap[d].closed), 1);
+
+  document.getElementById('daily-chart').innerHTML = allDays.map(d => {
+    const data = dayMap[d];
+    const total = data.merged + data.open + data.closed;
+    const hMerged = Math.max(data.merged / maxDay * 120, 0);
+    const hOpen = Math.max(data.open / maxDay * 120, 0);
+    const hClosed = Math.max(data.closed / maxDay * 120, 0);
+    return `<div class="timeline-bar" data-tip="${d}: ${total}条 (合并${data.merged}/Open${data.open}/关闭${data.closed})" style="height:${Math.max(total / maxDay * 100, 3)}%">
+      <div class="bar-closed" style="height:${hClosed}px"></div>
+      <div class="bar-open" style="height:${hOpen}px"></div>
+      <div class="bar-merged" style="height:${hMerged}px"></div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('daily-labels').innerHTML = allDays.map((d, i) => {
+    const show = allDays.length <= 14 || i % Math.ceil(allDays.length / 14) === 0;
+    return `<span>${show ? d.substring(5) : ''}</span>`;
+  }).join('');
+
+  // 小时分布
+  const hourMap = Array(24).fill(0).map(() => ({ merged: 0, open: 0, closed: 0 }));
+  allPRs.forEach(pr => {
+    const h = new Date(pr.created_at).getHours();
+    hourMap[h][prStatus(pr)]++;
+  });
+  const maxHour = Math.max(...hourMap.map(h => h.merged + h.open + h.closed), 1);
+
+  document.getElementById('hourly-chart').innerHTML = hourMap.map((data, h) => {
+    const total = data.merged + data.open + data.closed;
+    const hM = Math.max(data.merged / maxHour * 120, 0);
+    const hO = Math.max(data.open / maxHour * 120, 0);
+    const hC = Math.max(data.closed / maxHour * 120, 0);
+    return `<div class="timeline-bar" data-tip="${h}:00 - ${total}条" style="height:${Math.max(total / maxHour * 100, 3)}%">
+      <div class="bar-closed" style="height:${hC}px"></div>
+      <div class="bar-open" style="height:${hO}px"></div>
+      <div class="bar-merged" style="height:${hM}px"></div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('hourly-labels').innerHTML = hourMap.map((_, h) => `<span>${h}</span>`).join('');
+}
+
+// ===================== PR 列表 =====================
+function renderPRList(statusFilter = 'all', groupFilter = 'all', search = '') {
+  let filtered = allPRs;
+  if (statusFilter !== 'all') filtered = filtered.filter(p => prStatus(p) === statusFilter);
+  if (groupFilter !== 'all') filtered = filtered.filter(p => detectGroup(p) === groupFilter);
+  if (search) {
+    const q = search.toLowerCase();
+    filtered = filtered.filter(p => p.title.toLowerCase().includes(q) || p.user.login.toLowerCase().includes(q));
+  }
+
+  document.getElementById('pr-count-label').textContent = `共 ${filtered.length} 条`;
+
+  let html = `<table class="data-table"><thead><tr>
+    <th style="width:50px">#</th><th>标题</th><th>作者</th><th>小组</th><th>状态</th><th>创建时间</th><th>合并/关闭时间</th>
+  </tr></thead><tbody>`;
+  filtered.forEach(pr => {
+    const st = prStatus(pr);
+    const badgeCls = st === 'merged' ? 'badge-merged' : st === 'open' ? 'badge-open' : 'badge-closed';
+    const badgeText = st === 'merged' ? '已合并' : st === 'open' ? 'Open' : '已关闭';
+    const g = detectGroup(pr);
+    const endTime = pr.merged_at || pr.closed_at;
+    html += `<tr>
+      <td><a href="${pr.html_url}" target="_blank">#${pr.number}</a></td>
+      <td style="max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${pr.title.replace(/"/g, '&quot;')}">${pr.title}</td>
+      <td><a href="${pr.user.html_url}" target="_blank">${pr.user.login}</a></td>
+      <td><span style="color:${GROUP_COLORS[g] || 'var(--muted)'};font-weight:600">${GROUP_LABELS[g] || g}</span></td>
+      <td><span class="badge ${badgeCls}">${badgeText}</span></td>
+      <td style="font-size:12px">${formatDate(pr.created_at)}</td>
+      <td style="font-size:12px">${endTime ? formatDate(endTime) : '—'}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('pr-table-wrap').innerHTML = filtered.length ? html : '<div class="empty-state"><div class="icon">📋</div><p>无匹配 PR</p></div>';
+}
+
+// ===================== 筛选器 =====================
+function populateFilters() {
+  const groups = [...new Set(allPRs.map(detectGroup))].filter(g => g !== 'unknown').sort();
+  const opts = '<option value="all">全部小组</option>' + groups.map(g => `<option value="${g}">${GROUP_LABELS[g] || g}</option>`).join('');
+  document.getElementById('group-filter').innerHTML = opts;
+  document.getElementById('student-group-filter').innerHTML = opts;
+  document.getElementById('pr-group-filter').innerHTML = opts;
+}
+
+// 绑定筛选事件
+document.getElementById('group-filter').addEventListener('change', e => renderGroupDetail(e.target.value));
+document.getElementById('student-group-filter').addEventListener('change', () => {
+  renderStudentDetail(document.getElementById('student-group-filter').value, document.getElementById('student-search').value);
+});
+document.getElementById('student-search').addEventListener('input', () => {
+  renderStudentDetail(document.getElementById('student-group-filter').value, document.getElementById('student-search').value);
+});
+document.getElementById('pr-status-filter').addEventListener('change', () => {
+  renderPRList(document.getElementById('pr-status-filter').value, document.getElementById('pr-group-filter').value, document.getElementById('pr-search').value);
+});
+document.getElementById('pr-group-filter').addEventListener('change', () => {
+  renderPRList(document.getElementById('pr-status-filter').value, document.getElementById('pr-group-filter').value, document.getElementById('pr-search').value);
+});
+document.getElementById('pr-search').addEventListener('input', () => {
+  renderPRList(document.getElementById('pr-status-filter').value, document.getElementById('pr-group-filter').value, document.getElementById('pr-search').value);
+});
+
+// ===================== 初始化 =====================
+loadAllPRs();
+</script>
+</body>
+</html>

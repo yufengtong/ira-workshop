@@ -1,0 +1,51 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: stock-news-notifier
+  
+  datasource:
+    url: jdbc:sqlite:./data/stocknews.db
+    driver-class-name: org.sqlite.JDBC
+    
+  jpa:
+    database-platform: org.sqlite.hibernate.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        
+  mail:
+    host: ${MAIL_HOST:smtp.example.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+# 资讯聚合配置
+news:
+  aggregation:
+    dedup-enabled: true
+    similarity-threshold: 0.8
+  
+  notification:
+    schedule: "0 0 9 * * ?"
+    enabled: true
+
+# 数据源配置文件路径
+providers:
+  config: classpath:providers.yml
+
+# 日志配置
+logging:
+  level:
+    com.stocknews: DEBUG
+    org.hibernate.SQL: DEBUG

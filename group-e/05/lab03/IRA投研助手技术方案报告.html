@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IRA 智能投研助手系统技术方案报告</title>
+<style>
+  :root {
+    --primary-blue: #004098;
+    --dark-blue: #00295F;
+    --light-blue: #1A6FD5;
+    --bg-blue: #E8EFF8;
+    --border-blue: #99B8D9;
+    --accent-red: #E72521;
+    --accent-gold: #C9A96E;
+    --white: #FFFFFF;
+    --gray-100: #F0F2F5;
+    --gray-200: #E5E8ED;
+    --gray-600: #6B7280;
+    --gray-800: #2D3748;
+    --text: #1A202C;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg-blue);
+    color: var(--text);
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: var(--white);
+    box-shadow: 0 4px 24px rgba(0,41,95,0.1);
+  }
+
+  /* ===== Page breaks for print ===== */
+  .page-break {
+    page-break-after: always;
+    border: none;
+    height: 4px;
+    background: linear-gradient(to right, transparent, var(--primary-blue), transparent);
+    margin: 48px 0;
+  }
+
+  /* ===== Section padding ===== */
+  .section { padding: 40px 56px; }
+  .section + .section { padding-top: 0; }
+
+  /* ===== Cover ===== */
+  .cover {
+    background: linear-gradient(135deg, var(--dark-blue) 0%, var(--primary-blue) 60%, var(--light-blue) 100%);
+    color: var(--white);
+    padding: 80px 56px;
+    text-align: center;
+  }
+  .cover h1 { font-size: 34px; font-weight: 700; letter-spacing: 3px; margin-bottom: 12px; color: var(--white); }
+  .cover h2 { font-size: 22px; font-weight: 500; opacity: 0.9; margin-bottom: 8px; color: var(--white); }
+  .cover h3 { font-size: 16px; font-weight: 400; opacity: 0.7; letter-spacing: 2px; margin-bottom: 40px; color: rgba(255,255,255,0.7); }
+  .cover-table { margin: 0 auto; border-collapse: collapse; }
+  .cover-table td {
+    padding: 8px 24px;
+    font-size: 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+  }
+  .cover-table td:first-child {
+    text-align: right;
+    opacity: 0.7;
+    font-weight: 500;
+    padding-right: 20px;
+  }
+  .cover-table td:last-child { text-align: left; font-weight: 600; }
+
+  /* ===== Disclaimer banner ===== */
+  .disclaimer-banner {
+    background: #FFF3CD;
+    border-left: 4px solid #FFC107;
+    padding: 14px 56px;
+    font-size: 13px;
+    color: #856404;
+    line-height: 1.7;
+  }
+
+  /* ===== Headings ===== */
+  h2.section-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--primary-blue);
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--light-blue);
+    margin-bottom: 24px;
+  }
+  h3 {
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--dark-blue);
+    margin: 28px 0 14px;
+  }
+  h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--primary-blue);
+    margin: 20px 0 10px;
+  }
+  p { font-size: 14.5px; color: var(--gray-800); margin-bottom: 12px; text-align: justify; }
+  ul, ol { margin: 0 0 14px 20px; font-size: 14.5px; color: var(--gray-800); }
+  li { margin-bottom: 6px; }
+  strong { color: var(--dark-blue); }
+
+  /* ===== Styled block (left border) ===== */
+  .styled-block {
+    border-left: 4px solid var(--primary-blue);
+    padding-left: 18px;
+    background: linear-gradient(to right, var(--bg-blue), transparent);
+    margin: 14px 0 20px;
+    padding-top: 14px;
+    padding-bottom: 4px;
+    border-radius: 0 6px 6px 0;
+  }
+  .styled-block.red {
+    border-left-color: var(--accent-red);
+    background: linear-gradient(to right, #FDE8E8, transparent);
+  }
+
+  /* ===== Tables ===== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 24px;
+    font-size: 13.5px;
+  }
+  thead th {
+    background: var(--primary-blue);
+    color: var(--white);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  thead th:first-child { border-radius: 6px 0 0 0; }
+  thead th:last-child { border-radius: 0 6px 0 0; }
+  tbody td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--gray-200);
+    vertical-align: top;
+  }
+  tbody tr:nth-child(even) { background: var(--gray-100); }
+  tbody tr:hover { background: #EBF0FA; }
+
+  /* ===== Meta tables (cover sub-tables) ===== */
+  .meta-table { max-width: 600px; }
+  .meta-table th { font-size: 13px; }
+  .meta-table td { font-size: 13px; padding: 7px 14px; }
+
+  /* ===== Code / Pre blocks ===== */
+  pre {
+    background: #0D1B2A;
+    color: #D4E4F7;
+    border: 1px solid var(--border-blue);
+    border-radius: 6px;
+    padding: 18px 22px;
+    font-family: "SF Mono", "Fira Code", "Cascadia Code", Consolas, monospace;
+    font-size: 12.5px;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin: 16px 0 24px;
+    white-space: pre;
+  }
+
+  /* ===== Blockquote ===== */
+  blockquote {
+    border-left: 4px solid var(--accent-red);
+    background: var(--bg-blue);
+    padding: 14px 20px;
+    margin: 16px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 13.5px;
+    color: var(--gray-800);
+  }
+
+  /* ===== TOC box ===== */
+  .toc-box {
+    background: linear-gradient(to right, var(--bg-blue), var(--border-blue), var(--bg-blue));
+    padding: 24px 28px;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-blue);
+    margin: 16px 0 24px;
+  }
+  .toc-box ol { margin: 0; padding-left: 20px; }
+  .toc-box li { margin-bottom: 4px; font-size: 14px; }
+  .toc-box a { color: var(--light-blue); text-decoration: none; }
+  .toc-box a:hover { text-decoration: underline; }
+
+  /* ===== Footer ===== */
+  .page-footer {
+    background: var(--dark-blue);
+    color: rgba(255,255,255,0.5);
+    padding: 16px 56px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+  }
+
+  /* ===== Print ===== */
+  @media print {
+    body { background: #fff; }
+    .container { box-shadow: none; }
+    .page-break { page-break-after: always; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ==================== COVER ==================== -->
+  <div class="cover">
+    <h1>IRA 智能投研助手系统</h1>
+    <h2>技术方案报告</h2>
+    <h3>Investment Research Assistant</h3>
+    <table class="cover-table">
+      <tr><td>项目名称</td><td>IRA 智能投研助手系统</td></tr>
+      <tr><td>文档编号</td><td>IRA-TECH-2026-001</td></tr>
+      <tr><td>版　　本</td><td>V1.0</td></tr>
+      <tr><td>密　　级</td><td>内部公开</td></tr>
+      <tr><td>编制单位</td><td>投研技术部</td></tr>
+      <tr><td>编制日期</td><td>2026年4月</td></tr>
+    </table>
+  </div>
+
+  <div class="disclaimer-banner">
+    ⚠️ <strong>免责声明</strong>：本报告所涉及的所有股票数据、分析报告、情感分析结果等均为<strong>示例/模拟数据</strong>，仅供技术方案演示和学习使用，<strong>不构成任何投资建议</strong>。投资有风险，入市需谨慎。
+  </div>
+
+  <!-- ==================== META SECTION ==================== -->
+  <div class="section">
+    <h2 class="section-title">版本记录</h2>
+    <table class="meta-table">
+      <thead><tr><th>版本号</th><th>修订日期</th><th>修订人</th><th>修订内容说明</th></tr></thead>
+      <tbody>
+        <tr><td>V1.0</td><td>2026年4月</td><td>投研技术部</td><td>初版发布，完成整体技术方案设计</td></tr>
+        <tr><td>-</td><td>-</td><td>-</td><td>-</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="section-title">审批记录</h2>
+    <table class="meta-table">
+      <thead><tr><th>角色</th><th>姓名</th><th>签字</th><th>日期</th></tr></thead>
+      <tbody>
+        <tr><td>编写</td><td>________</td><td></td><td>________</td></tr>
+        <tr><td>审核</td><td>________</td><td></td><td>________</td></tr>
+        <tr><td>批准</td><td>________</td><td></td><td>________</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="section-title">文档分发</h2>
+    <table class="meta-table">
+      <thead><tr><th>序号</th><th>接收部门</th><th>接收人</th><th>份数</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>投研技术部</td><td>________</td><td>1</td></tr>
+        <tr><td>2</td><td>投资研究部</td><td>________</td><td>1</td></tr>
+        <tr><td>3</td><td>合规风控部</td><td>________</td><td>1</td></tr>
+        <tr><td>4</td><td>运维保障部</td><td>________</td><td>1</td></tr>
+      </tbody>
+    </table>
+
+    <h2 class="section-title">目录</h2>
+    <div class="toc-box">
+      <ol>
+        <li><a href="#sec1">项目背景与需求分析</a></li>
+        <li><a href="#sec2">项目建设目标</a></li>
+        <li><a href="#sec3">技术架构方案</a></li>
+        <li><a href="#sec4">核心功能设计</a></li>
+        <li><a href="#sec5">多智能体协作体系</a></li>
+        <li><a href="#sec6">安全与合规保障</a></li>
+        <li><a href="#sec7">部署实施方案</a></li>
+        <li><a href="#sec8">风险评估与应对</a></li>
+        <li><a href="#sec9">项目实施计划</a></li>
+        <li><a href="#sec10">总结与展望</a></li>
+      </ol>
+    </div>
+  </div>
+
+  <hr class="page-break">
+
+  <!-- ==================== PAGE 2 ==================== -->
+  <div class="section" id="sec1">
+    <h2 class="section-title">1. 项目背景与需求分析</h2>
+    <div class="styled-block">
+      <h3>1.1 行业背景</h3>
+      <p>随着资产管理行业数字化转型深入，投研团队面临日益增长的信息处理压力。传统投研模式存在以下痛点：</p>
+      <ul>
+        <li><strong>信息过载</strong>：海量研报、新闻、行情数据需要人工筛选与整合，效率低下</li>
+        <li><strong>观点单一</strong>：单人研究员视角有限，难以全面覆盖看多/看空多维度分析</li>
+        <li><strong>合规风险</strong>：人工撰写的投研报告可能触发监管红线（禁荐股、保本承诺等）</li>
+        <li><strong>溯源困难</strong>：投研结论缺乏系统化的数据来源追踪与审计链路</li>
+        <li><strong>多源整合难</strong>：行情、研报、舆情等多源数据分散在不同系统，缺乏统一编排</li>
+      </ul>
+
+      <h3>1.2 需求分析</h3>
+      <p>基于上述背景，本项目旨在构建一套<strong>智能投研助手系统</strong>，满足以下核心需求：</p>
+    </div>
+    <table>
+      <thead><tr><th>需求类别</th><th>具体需求</th></tr></thead>
+      <tbody>
+        <tr><td>多源数据整合</td><td>统一接入行情快照、研报知识库、舆情新闻等多源数据</td></tr>
+        <tr><td>多智能体协作</td><td>支持看多/看空/纪要多角色 Agent 结构化辩论与交叉验证</td></tr>
+        <tr><td>合规闸门</td><td>内置规则引擎，自动扫描并过滤违规话术与不当建议</td></tr>
+        <tr><td>全链路溯源</td><td>每条分析结论可追溯至原始数据源（chunk ID / 时间戳）</td></tr>
+        <tr><td>投研报告生成</td><td>自动生成结构化投研纪要，支持导出与审计</td></tr>
+        <tr><td>CoPaw底座集成</td><td>基于 CoPaw 多代理框架实现 Agent 编排、技能扩展与渠道接入</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section" id="sec2">
+    <h2 class="section-title">2. 项目建设目标</h2>
+    <div class="styled-block">
+      <h3>2.1 总体目标</h3>
+      <p>构建一套<strong>安全、合规、可溯源</strong>的智能投研助手系统，通过多智能体协作实现多维度投研分析，辅助投研团队提升决策效率与质量。</p>
+      <h3>2.2 具体目标</h3>
+    </div>
+<pre>┌──────────────────────────────────────────────────────────────────┐
+│                        项目建设目标                                │
+├──────────────────────────────────────────────────────────────────┤
+│  ✓ 多Agent辩论：看多/看空/纪要官三角色闭环，结构化观点对辩       │
+│  ✓ 多源整合：行情、研报、舆情等多源数据统一接入与编排             │
+│  ✓ 合规保障：R-G01/R-G02 规则集自动扫描，100% 闸门覆盖          │
+│  ✓ 全链路追踪：Trace ID 串联全链路，每条发言关联原始引用          │
+│  ✓ 知识库问答：基于 CoPaw 技能扩展，支持研报检索与智能问答       │
+│  ✓ 智能通知：多渠道（钉钉/飞书/邮件）异常预警与定时推送          │
+│  ✓ 零停机部署：Agent 配置热重载，服务连续性保障                   │
+└──────────────────────────────────────────────────────────────────┘</pre>
+    <h3>2.3 系统功能树</h3>
+<pre>IRA 智能投研助手系统
+├── 用户认证与授权
+├── 投研问答（Research）
+├── 舆情/情感分析（Sentiment）
+├── 合规审查（Compliance）
+├── 数据血缘追踪（Lineage）
+├── 知识库管理（Knowledge）
+├── 智能通知（Notify）
+│   ├── 通知渠道管理
+│   ├── 模板与规则配置
+│   ├── 发送历史追踪
+│   └── 分发调度引擎
+├── 报告与文档（Reports）
+├── 多代理协同（Multi-Agent）
+│   ├── M5-BULL 看多研究员
+│   ├── M5-BEAR 风控/看空研究员
+│   └── M5-MOD  辩论主持/纪要官
+├── 技能扩展（Skills）
+└── 系统监控与健康检查</pre>
+  </div>
+
+  <hr class="page-break">
+
+  <!-- ==================== PAGE 3 ==================== -->
+  <div class="section" id="sec3">
+    <h2 class="section-title">3. 技术架构方案</h2>
+    <div class="styled-block">
+      <h3>3.1 技术选型</h3>
+      <h4>3.1.1 后端技术栈</h4>
+    </div>
+    <table>
+      <thead><tr><th>技术项</th><th>选型方案</th><th>选型理由</th></tr></thead>
+      <tbody>
+        <tr><td>开发语言</td><td>Python ≥ 3.8</td><td>AI 生态丰富，与 CoPaw/AgentScope 原生兼容</td></tr>
+        <tr><td>Web框架</td><td>Flask 3.x</td><td>轻量灵活，Blueprint 模块化扩展性好</td></tr>
+        <tr><td>API规范</td><td>OpenAPI 3.0 + /api/v1</td><td>前后端契约对齐，自动化文档生成</td></tr>
+        <tr><td>数据存储</td><td>JSON 文件存储</td><td>轻量部署，适合 Workshop 教学场景</td></tr>
+        <tr><td>Agent底座</td><td>CoPaw（AgentScope 生态）</td><td>多Agent管理、技能扩展、多渠道接入</td></tr>
+      </tbody>
+    </table>
+
+    <h4>3.1.2 前端技术栈</h4>
+    <table>
+      <thead><tr><th>技术项</th><th>选型方案</th><th>选型理由</th></tr></thead>
+      <tbody>
+        <tr><td>框架</td><td>React + TypeScript</td><td>类型安全，组件化开发效率高</td></tr>
+        <tr><td>构建工具</td><td>Vite</td><td>极速热重载，开发体验优秀</td></tr>
+        <tr><td>路由</td><td>React Router</td><td>SPA 路由管理，支持 16+ 页面组件</td></tr>
+        <tr><td>状态管理</td><td>Context API</td><td>轻量级，适合中等规模应用</td></tr>
+      </tbody>
+    </table>
+
+    <h4>3.1.3 CoPaw 底座依赖</h4>
+    <table>
+      <thead><tr><th>依赖组件</th><th>功能说明</th></tr></thead>
+      <tbody>
+        <tr><td>MultiAgentManager</td><td>多代理实例管理、惰性加载、零停机热重载</td></tr>
+        <tr><td>Workspace</td><td>Agent 级别资源隔离与生命周期管理</td></tr>
+        <tr><td>ServiceManager</td><td>声明式服务注册与优先级并发初始化</td></tr>
+        <tr><td>TaskTracker</td><td>流式事件缓冲、断线重连回放</td></tr>
+        <tr><td>MemoryManager</td><td>内存压缩、摘要、向量/全文检索</td></tr>
+      </tbody>
+    </table>
+
+    <h3>3.2 系统架构</h3>
+    <h4>3.2.1 整体架构图</h4>
+<pre>                              ┌─────────────────────┐
+                              │     用户终端          │
+                              └──────────┬──────────┘
+                                         │
+              ┌──────────────────────────┼──────────────────────────┐
+              │                          │                          │
+     ┌────────▼────────┐       ┌────────▼────────┐       ┌────────▼────────┐
+     │   钉钉/飞书      │       │   Web控制台      │       │   CoPaw Console │
+     │   渠道接入        │       │   React+Vite    │       │   :8088         │
+     └────────┬────────┘       └────────┬────────┘       └────────┬────────┘
+              │                          │                          │
+              └──────────────────────────┼──────────────────────────┘
+                                         │
+                              ┌──────────▼──────────┐
+                              │   API 网关层         │
+                              │   /api/v1            │
+                              └──────────┬──────────┘
+                                         │
+              ┌──────────────────────────┼──────────────────────────┐
+              │                          │                          │
+     ┌────────▼────────┐       ┌────────▼────────┐       ┌────────▼────────┐
+     │  14个Blueprint   │       │  多Agent编排器   │       │  CoPaw Skill    │
+     │  路由模块         │       │  (Orchestrator) │       │  技能系统        │
+     └────────┬────────┘       └────────┬────────┘       └────────┬────────┘
+              │                          │                          │
+              └──────────────────────────┼──────────────────────────┘
+                                         │
+              ┌──────────────────────────┼──────────────────────────┐
+              │                          │                          │
+     ┌────────▼────────┐       ┌────────▼────────┐       ┌────────▼────────┐
+     │  JSON Store      │       │  知识库检索      │       │  行情/舆情       │
+     │  数据存储         │       │  (M3 契约)      │       │  (M2 契约)       │
+     └─────────────────┘       └─────────────────┘       └─────────────────┘</pre>
+
+    <h4>3.2.2 分层架构说明</h4>
+    <table>
+      <thead><tr><th>层级</th><th>组件</th><th>职责说明</th></tr></thead>
+      <tbody>
+        <tr><td>接入层</td><td>钉钉/飞书/Web/CoPaw Console</td><td>多渠道消息收发与统一接入</td></tr>
+        <tr><td>路由层</td><td>AgentScopedRouter + 中间件</td><td>从 URL/Header 提取 Agent ID，注入请求上下文</td></tr>
+        <tr><td>编排层</td><td>多Agent编排器 + Blueprint</td><td>API 路由分发，多轮辩论调度与合并</td></tr>
+        <tr><td>能力层</td><td>知识库/行情/舆情/合规</td><td>各业务域服务实现与工具白名单管理</td></tr>
+        <tr><td>存储层</td><td>JSON Store + data/*.json</td><td>轻量数据持久化，支持数据种子初始化</td></tr>
+      </tbody>
+    </table>
+
+    <h3>3.3 数据流设计</h3>
+<pre>用户请求 → 渠道适配 → API路由 → 编排器调度 → Agent并行分析 → 合规闸门 → 纪要合并 → 响应返回
+                                      │                              │
+                                      └─── Trace ID 串联全链路 ───────┘</pre>
+  </div>
+
+  <hr class="page-break">
+
+  <!-- ==================== PAGE 4 ==================== -->
+  <div class="section" id="sec4">
+    <h2 class="section-title">4. 核心功能设计</h2>
+    <div class="styled-block">
+      <h3>4.1 投研问答系统</h3>
+      <p>基于知识库检索与大模型推理，提供投资研究领域的智能问答能力：</p>
+    </div>
+    <table>
+      <thead><tr><th>功能模块</th><th>功能描述</th></tr></thead>
+      <tbody>
+        <tr><td>研报检索</td><td>基于向量/全文检索，从研报知识库中召回相关片段（M3 契约）</td></tr>
+        <tr><td>行情快照</td><td>获取标的实时/历史行情数据（M2 契约）</td></tr>
+        <tr><td>智能问答</td><td>基于检索增强生成（RAG），回答投研相关问题</td></tr>
+        <tr><td>引用溯源</td><td>每条回答关联 Citation Ref（chunk ID / label）</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.2 舆情与情感分析</h3>
+<pre>┌──────────────────────────────────────────────────────────────┐
+│                     舆情分析系统                               │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌─────────────┐   ┌─────────────┐   ┌─────────────┐        │
+│  │  新闻聚合    │   │  情感分析    │   │  趋势追踪    │        │
+│  │  多源采集    │   │  NLP 打分   │   │  异动预警    │        │
+│  └──────┬──────┘   └──────┬──────┘   └──────┬──────┘        │
+│         │                 │                 │                │
+│         └─────────────────┼─────────────────┘                │
+│                           │                                  │
+│                  ┌────────▼────────┐                         │
+│                  │  舆情仪表盘      │                         │
+│                  │  可视化展示      │                         │
+│                  └─────────────────┘                         │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘</pre>
+
+    <h3>4.3 合规审查引擎</h3>
+    <table>
+      <thead><tr><th>规则编号</th><th>规则名称</th><th>检测内容</th></tr></thead>
+      <tbody>
+        <tr><td>R-G01</td><td>禁荐股规则</td><td>检测是否包含直接推荐买卖特定股票的话术</td></tr>
+        <tr><td>R-G02</td><td>保本承诺规则</td><td>检测是否包含承诺收益或保本的违规表述</td></tr>
+        <tr><td>R-G03</td><td>数据来源规则</td><td>检测引用数据是否标注来源，无来源标注「模型推断」</td></tr>
+        <tr><td>R-G04</td><td>免责声明规则</td><td>检测输出是否包含必要的免责声明块</td></tr>
+      </tbody>
+    </table>
+
+    <h3>4.4 智能通知系统</h3>
+<pre>通知管理系统
+├── 渠道管理
+│   ├── 钉钉群组机器人
+│   ├── 飞书消息推送
+│   ├── 邮件通知
+│   └── 自定义 Webhook
+├── 模板与规则
+│   ├── 预警模板配置
+│   ├── 触发条件规则
+│   └── 频率与静默窗口
+├── 分发调度
+│   ├── 定时推送任务
+│   ├── 实时事件触发
+│   └── 批量分发引擎
+└── 发送历史
+    ├── 投递状态追踪
+    ├── 失败重试队列
+    └── 审计日志记录</pre>
+
+    <h3>4.5 数据血缘追踪</h3>
+    <p>支持从投研结论反向追踪至原始数据源，构建完整的数据血缘链路：</p>
+    <table>
+      <thead><tr><th>血缘节点</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>原始数据</td><td>行情快照、研报原文、新闻稿</td></tr>
+        <tr><td>处理中间态</td><td>分词、实体识别、情感打分</td></tr>
+        <tr><td>Agent 产出</td><td>各 Agent 的分析发言与引用</td></tr>
+        <tr><td>合并纪要</td><td>最终汇总报告与合规审核结果</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section" id="sec5">
+    <h2 class="section-title">5. 多智能体协作体系</h2>
+    <div class="styled-block red">
+      <h3>5.1 设计原则</h3>
+      <ul>
+        <li><strong>人机边界</strong>：多 Agent 仅辅助信息整理与观点对照，<strong>不构成投资建议</strong>，不替代合规与投委会决策</li>
+        <li><strong>可溯源</strong>：凡引用行情、新闻、研报片段，须标注来源（工具回执 ID / chunk ID / 时间戳）</li>
+        <li><strong>工具最小化</strong>：每 Agent 仅允许白名单工具，默认<strong>只读</strong>，禁止下单、改仓、代客操作类工具</li>
+      </ul>
+    </div>
+
+    <h3>5.2 Agent 角色定义（P0 三角色闭环）</h3>
+    <table>
+      <thead><tr><th>Agent ID</th><th>展示名</th><th>角色定位</th><th>论证立场</th><th>允许工具</th><th>显式禁止</th></tr></thead>
+      <tbody>
+        <tr><td>M5-BULL</td><td>看多研究员</td><td>从成长与催化剂角度补充论据</td><td>建设性、偏乐观</td><td>只读行情(M2)、知识库检索(M3)</td><td>编造数值；承诺收益；诱导交易</td></tr>
+        <tr><td>M5-BEAR</td><td>风控/看空研究员</td><td>从估值与下行风险角度质疑</td><td>质疑性、偏谨慎</td><td>只读行情(M2)、知识库检索(M3)</td><td>编造数值；承诺收益；诱导交易</td></tr>
+        <tr><td>M5-MOD</td><td>辩论主持/纪要官</td><td>不站队；结构化归纳分歧</td><td>中立</td><td>格式化/摘要（禁止拉取新行情）</td><td>输出买卖建议；替用户做决策</td></tr>
+      </tbody>
+    </table>
+
+    <h3>5.3 辩论编排流程</h3>
+<pre>   BFF 请求          编排器广播         R1 并行分析        R2 交叉验证        合规闸门          纪要输出
+  ┌────────┐      ┌────────────┐      ┌──────────┐      ┌──────────┐      ┌──────────┐      ┌────────┐
+  │ symbol │ ──→  │ fan_out    │ ──→  │ BULL     │ ──→  │ BEAR回应 │ ──→  │ R-G01~04 │ ──→  │ MOD    │
+  │ + mode │      │ 3 Agents   │      │ BEAR     │      │ BULL补充 │      │ 规则扫描  │      │ 汇总   │
+  └────────┘      └────────────┘      │ MOD旁听  │      └──────────┘      └──────────┘      └────────┘
+                                      └──────────┘</pre>
+
+    <h3>5.4 消息总线示例</h3>
+    <table>
+      <thead><tr><th>时间戳</th><th>发送方</th><th>接收方</th><th>类型</th><th>消息内容</th></tr></thead>
+      <tbody>
+        <tr><td>10:00:01.120</td><td>BFF</td><td>编排Agent</td><td>request</td><td>start_pipeline(symbol='600519', mode=parallel_then_merge)</td></tr>
+        <tr><td>10:00:01.145</td><td>编排Agent</td><td>全体</td><td>broadcast</td><td>fan_out: [M5-BULL, M5-BEAR, M5-MOD] round=1</td></tr>
+        <tr><td>10:00:02.880</td><td>M5-BULL</td><td>编排Agent</td><td>result</td><td>artifact v1: 成长论据与催化剂分析</td></tr>
+        <tr><td>10:00:03.102</td><td>M5-BEAR</td><td>编排Agent</td><td>result</td><td>artifact v1: 估值风险与下行场景</td></tr>
+        <tr><td>10:00:03.340</td><td>M5-MOD</td><td>编排Agent</td><td>result</td><td>artifact v1: 规则扫描 PASS</td></tr>
+        <tr><td>10:00:04.010</td><td>编排Agent</td><td>M5-BEAR</td><td>delegate</td><td>reply_to=M5-BULL: 请针对成长论据进行压力测试</td></tr>
+        <tr><td>10:00:05.400</td><td>编排Agent</td><td>merge</td><td>merge</td><td>merge_trace 已生成，进入合规闸门</td></tr>
+      </tbody>
+    </table>
+
+    <h3>5.5 CoPaw 底座集成架构</h3>
+<pre>┌──────────────────────────────────────────────────────────────┐
+│                     CoPaw 多代理管理底座                       │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌──────────────────┐   ┌──────────────────┐                 │
+│  │ MultiAgentManager│   │ AgentContext     │                 │
+│  │ · 惰性加载       │   │ · 请求上下文注入  │                 │
+│  │ · 零停机热重载    │   │ · Agent ID 解析  │                 │
+│  │ · 后台异步清理    │   │ · 多租户隔离     │                 │
+│  └────────┬─────────┘   └────────┬─────────┘                 │
+│           │                      │                           │
+│  ┌────────▼──────────────────────▼─────────┐                 │
+│  │           Workspace (per Agent)         │                 │
+│  │  ┌────────────┐  ┌──────────────────┐   │                 │
+│  │  │ Runner     │  │ ServiceManager   │   │                 │
+│  │  │ · 查询处理 │  │ · 声明式注册     │   │                 │
+│  │  │ · 会话状态 │  │ · 优先级初始化   │   │                 │
+│  │  └────────────┘  └──────────────────┘   │                 │
+│  │  ┌────────────┐  ┌──────────────────┐   │                 │
+│  │  │ TaskTracker│  │ MemoryManager    │   │                 │
+│  │  │ · SSE缓冲  │  │ · 内存压缩/摘要  │   │                 │
+│  │  │ · 断线重连 │  │ · 向量/全文检索  │   │                 │
+│  │  └────────────┘  └──────────────────┘   │                 │
+│  └─────────────────────────────────────────┘                 │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘</pre>
+
+    <h3>5.6 P1 扩展规划</h3>
+    <table>
+      <thead><tr><th>Agent ID（预留）</th><th>展示名</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td>M5-MACRO</td><td>宏观/流动性观察员</td><td>用户显式开启时加入第 4 视角；独立工具白名单与免责声明</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="page-break">
+
+  <!-- ==================== PAGE 5 ==================== -->
+  <div class="section" id="sec6">
+    <h2 class="section-title">6. 安全与合规保障</h2>
+    <div class="styled-block">
+      <h3>6.1 安全架构</h3>
+    </div>
+<pre>┌─────────────────────────────────────────────────────────────┐
+│                     安全与合规防护体系                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │              合规闸门引擎                            │   │
+│  │  • R-G01~R-G04 规则集自动扫描                       │   │
+│  │  • 禁荐股/保本承诺/数据来源/免责声明 四维检测         │   │
+│  │  • 拦截或降级处理，保留审计日志                       │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │              工具守卫引擎（CoPaw）                    │   │
+│  │  • 每 Agent 独立工具白名单                           │   │
+│  │  • 默认只读，禁止交易/改仓类操作                     │   │
+│  │  • 规则校验 + 审批流程                               │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │              全链路追踪与审计                        │   │
+│  │  • Trace ID 贯穿请求→编排→Agent→合并全流程          │   │
+│  │  • Citation Ref 关联原始数据源                       │   │
+│  │  • 发言/工具调用完整记录，支持事后审查               │   │
+│  └─────────────────────────────────────────────────────┘   │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘</pre>
+
+    <h3>6.2 安全机制说明</h3>
+    <table>
+      <thead><tr><th>安全层级</th><th>机制</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>Agent层</td><td>工具白名单</td><td>每个 Agent 仅允许已注册的只读工具，禁止交易操作</td></tr>
+        <tr><td>编排层</td><td>合规闸门</td><td>R-G01~R-G04 规则集扫描，违规内容自动拦截</td></tr>
+        <tr><td>数据层</td><td>溯源审计</td><td>Trace ID + Citation Ref 构建完整审计链路</td></tr>
+        <tr><td>接口层</td><td>Bearer Token</td><td>API 鉴权，userId 由网关解析，不信任 body 字段</td></tr>
+        <tr><td>输出层</td><td>免责声明</td><td>所有投研输出强制附带免责声明块</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section" id="sec7">
+    <h2 class="section-title">7. 部署实施方案</h2>
+    <div class="styled-block">
+      <h3>7.1 部署架构</h3>
+    </div>
+    <table>
+      <thead><tr><th>组件</th><th>端口</th><th>说明</th></tr></thead>
+      <tbody>
+        <tr><td>IRA Backend (Flask)</td><td>5000</td><td>后端 API 服务，14 个 Blueprint 模块</td></tr>
+        <tr><td>IRA Frontend (Vite)</td><td>5173</td><td>前端开发服务器，16 个页面组件</td></tr>
+        <tr><td>CoPaw Console</td><td>8088</td><td>AI 助手 Web 控制台</td></tr>
+        <tr><td>Demo Nginx</td><td>80/443</td><td>演示网站 + 反向代理</td></tr>
+        <tr><td>Mock API</td><td>5001</td><td>演示环境 Mock 服务</td></tr>
+      </tbody>
+    </table>
+
+    <h3>7.2 CI/CD 自动化</h3>
+    <table>
+      <thead><tr><th>工作流</th><th>触发条件</th><th>用途</th></tr></thead>
+      <tbody>
+        <tr><td>deploy-demo.yml</td><td>demo/** 变更推送 main</td><td>自动部署 Demo 到 ECS</td></tr>
+        <tr><td>deploy-dev.yml</td><td>开发分支推送</td><td>开发环境部署</td></tr>
+        <tr><td>deploy-prod.yml</td><td>Release Tag</td><td>生产环境部署</td></tr>
+        <tr><td>e2e-tests.yml</td><td>PR 触发</td><td>端到端自动化测试</td></tr>
+        <tr><td>ai-code-review.yml</td><td>PR 触发</td><td>AI 辅助代码审查</td></tr>
+      </tbody>
+    </table>
+
+    <h3>7.3 ECS 部署流程</h3>
+<pre>代码推送 → GitHub Actions 触发 → 备份 Nginx 配置 → 上传新配置 →
+  → 重载 Nginx → 上传应用文件 → 配置 systemd 服务 → 启动 Mock API → 部署完成</pre>
+  </div>
+
+  <div class="section" id="sec8">
+    <h2 class="section-title">8. 风险评估与应对</h2>
+    <div class="styled-block">
+      <h3>8.1 技术风险</h3>
+    </div>
+    <table>
+      <thead><tr><th>风险项</th><th>风险等级</th><th>应对措施</th></tr></thead>
+      <tbody>
+        <tr><td>多Agent响应延迟</td><td>中</td><td>并行编排 + 超时控制，单轮 &lt; 5s 目标</td></tr>
+        <tr><td>CoPaw底座兼容性</td><td>中</td><td>CoPaw Adapter 双模式：优先CoPaw，回退本地Mock</td></tr>
+        <tr><td>模型幻觉风险</td><td>高</td><td>合规闸门 + 溯源机制，无依据标注「模型推断」</td></tr>
+      </tbody>
+    </table>
+    <h3>8.2 合规风险</h3>
+    <table>
+      <thead><tr><th>风险项</th><th>风险等级</th><th>应对措施</th></tr></thead>
+      <tbody>
+        <tr><td>违规投资建议</td><td>高</td><td>R-G01~R-G04 四维规则扫描，强制免责声明</td></tr>
+        <tr><td>数据来源不明</td><td>中</td><td>Citation Ref 强制关联，无来源拒答或标注</td></tr>
+        <tr><td>审计链路缺失</td><td>中</td><td>Trace ID 全链路串联，完整发言记录</td></tr>
+      </tbody>
+    </table>
+    <h3>8.3 运维风险</h3>
+    <table>
+      <thead><tr><th>风险项</th><th>风险等级</th><th>应对措施</th></tr></thead>
+      <tbody>
+        <tr><td>服务中断</td><td>中</td><td>零停机热重载，systemd 进程守护</td></tr>
+        <tr><td>配置丢失</td><td>低</td><td>JSON 持久化 + Git 版本管理</td></tr>
+        <tr><td>Agent 状态异常</td><td>中</td><td>TaskTracker 超时等待 + 优雅关闭机制</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section" id="sec9">
+    <h2 class="section-title">9. 项目实施计划</h2>
+    <div class="styled-block">
+      <h3>9.1 模块化实施路线</h3>
+    </div>
+<pre>┌──────────────────────────────────────────────────────────────────────┐
+│                        模块化实施路线图                                │
+├──────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  Module 01：投研助手基础版                                            │
+│  ├── 时间：第 1 天                                                    │
+│  ├── 目标：完成基础前后端实现，熟悉系统框架                            │
+│  └── 交付：可运行的基础投研助手原型                                    │
+│                                                                      │
+│  Module 02：GlueCoding 多源数据集成                                   │
+│  ├── 时间：第 2 天                                                    │
+│  ├── 目标：多源数据整合（行情、研报、舆情），GlueCoding 工作流         │
+│  └── 交付：统一数据接入层，M2 数据契约实现                            │
+│                                                                      │
+│  Module 03：知识库与问答（CoPaw 底座）                                │
+│  ├── 时间：第 3 天                                                    │
+│  ├── 目标：基于 CoPaw 构建知识库问答系统，M3 检索契约                 │
+│  └── 交付：研报检索 + RAG 问答能力                                    │
+│                                                                      │
+│  Module 04：智能通知系统                                              │
+│  ├── 时间：第 4 天                                                    │
+│  ├── 目标：多渠道通知接入，模板规则引擎，调度分发                      │
+│  └── 交付：通知管理完整功能                                           │
+│                                                                      │
+│  Module 05：多 Agent 论股基                                           │
+│  ├── 时间：第 5 天                                                    │
+│  ├── 目标：三角色辩论 + 合规闸门 + 纪要导出 + 全链路追踪              │
+│  └── 交付：Qoder Experts 完整多Agent系统                              │
+│                                                                      │
+└──────────────────────────────────────────────────────────────────────┘</pre>
+
+    <h3>9.2 关键里程碑</h3>
+    <table>
+      <thead><tr><th>里程碑</th><th>目标</th><th>验收标准</th></tr></thead>
+      <tbody>
+        <tr><td>M1 基础闭环</td><td>基础投研问答可运行</td><td>前后端联调通过，API 契约对齐</td></tr>
+        <tr><td>M2 多源整合</td><td>行情/研报/舆情统一接入</td><td>GlueCoding 工作流通过验收</td></tr>
+        <tr><td>M3 知识库</td><td>CoPaw 技能 + RAG 问答</td><td>知识库检索准确率达标</td></tr>
+        <tr><td>M4 智能通知</td><td>多渠道通知可用</td><td>钉钉/飞书/邮件通知投递成功</td></tr>
+        <tr><td>M5 多Agent</td><td>三角色辩论 + 合规闸门</td><td>P0 功能 100% 通过，合规覆盖率 100%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section" id="sec10">
+    <h2 class="section-title">10. 总结与展望</h2>
+    <div class="styled-block">
+      <h3>10.1 方案总结</h3>
+      <p>本技术方案针对投研领域的智能化需求，提出了一套<strong>多智能体协作、合规可控、全链路可溯源</strong>的智能投研助手解决方案：</p>
+      <ol>
+        <li><strong>多Agent辩论引擎</strong>：看多/看空/纪要官三角色结构化对辩，确保投研观点多元且可反驳</li>
+        <li><strong>合规闸门保障</strong>：R-G01~R-G04 四维规则集自动扫描，100% 覆盖合规检查</li>
+        <li><strong>全链路溯源</strong>：Trace ID + Citation Ref 构建从结论到原始数据的完整审计链路</li>
+        <li><strong>CoPaw底座赋能</strong>：零停机热重载、多渠道接入、技能可扩展的工业级Agent管理</li>
+        <li><strong>模块化实施</strong>：5天渐进式交付，每日一个独立模块，可验证可回溯</li>
+      </ol>
+      <h3>10.2 后续展望</h3>
+      <ul>
+        <li><strong>Agent角色扩展</strong>：引入 M5-MACRO 宏观/流动性观察员，丰富多维视角</li>
+        <li><strong>SSE 流式输出</strong>：前端实时展示 Agent 思考过程，提升交互体验</li>
+        <li><strong>报告自动生成</strong>：基于辩论纪要自动生成格式化投研报告，支持一键导出</li>
+        <li><strong>生产化部署</strong>：完善 ECS 部署流程、监控告警、审计日志等运维能力</li>
+        <li><strong>技能市场</strong>：基于 CoPaw 技能框架，构建投研领域的技能共享生态</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ===== Final disclaimer ===== -->
+  <div class="section">
+    <blockquote>
+      ⚠️ <strong>再次声明</strong>：本文档为 IRA 智能投研助手系统技术方案报告。所有涉及的股票代码、行情数据、分析观点均为模拟演示数据，仅用于技术架构说明，<strong>不构成任何投资建议</strong>。实际投资决策应依据持牌机构的正式研究报告及个人风险承受能力。
+    </blockquote>
+    <p style="text-align: center; margin-top: 40px; color: var(--gray-600); font-size: 14px;"><strong>— 文档结束 —</strong></p>
+  </div>
+
+  <!-- ===== Footer ===== -->
+  <div class="page-footer">
+    <span>IRA · Investment Research Assistant</span>
+    <span>IRA-TECH-2026-001 · V1.0</span>
+    <span>内部公开 · INTERNAL</span>
+  </div>
+
+</div>
+</body>
+</html>

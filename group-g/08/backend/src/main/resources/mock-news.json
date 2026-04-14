@@ -1,0 +1,102 @@
+[
+  {
+    "id": "mock-001",
+    "title": "央行宣布降准0.5个百分点，释放长期资金约1万亿元",
+    "content": "中国人民银行决定于2024年X月X日下调金融机构存款准备金率0.5个百分点，预计将释放长期资金约1万亿元。此次降准旨在保持银行体系流动性合理充裕，降低银行业金融机构资金成本，从而降低社会综合融资成本。",
+    "summary": "央行降准0.5个百分点，释放万亿资金",
+    "category": "POLICY",
+    "source": {
+      "providerName": "新浪财经",
+      "sourceUrl": "https://finance.sina.com.cn/roll/p/2024/article001.html",
+      "type": "CRAWLER"
+    },
+    "publishedAt": "2024-01-15T08:30:00",
+    "relatedStocks": ["600036", "601166", "000001"],
+    "relatedSectors": ["银行", "房地产"],
+    "impactFactor": {
+      "factorName": "货币政策宽松",
+      "weight": 0.9,
+      "category": "POLICY"
+    }
+  },
+  {
+    "id": "mock-002",
+    "title": "某知名科技公司发布AI大模型，股价涨停",
+    "content": "某知名科技公司今日正式发布新一代AI大模型，性能超越GPT-4，在多项基准测试中取得领先。受此消息刺激，公司股价今日开盘即涨停，带动整个AI板块走强。",
+    "summary": "科技公司发布AI大模型，股价涨停",
+    "category": "COMPANY",
+    "source": {
+      "providerName": "东方财富",
+      "sourceUrl": "https://www.eastmoney.com/a/2024/article002.html",
+      "type": "CRAWLER"
+    },
+    "publishedAt": "2024-01-15T09:15:00",
+    "relatedStocks": ["000063", "002230", "688111"],
+    "relatedSectors": ["人工智能", "计算机"],
+    "impactFactor": {
+      "factorName": "技术突破",
+      "weight": 0.85,
+      "category": "COMPANY"
+    }
+  },
+  {
+    "id": "mock-003",
+    "title": "新能源汽车销量创历史新高，行业景气度持续",
+    "content": "根据最新数据，2024年第一季度新能源汽车销量同比增长60%，创历史新高。多家车企销量突破预期，行业景气度持续向好。分析师预计全年销量有望突破1000万辆。",
+    "summary": "新能源车销量创新高，行业景气度持续",
+    "category": "INDUSTRY",
+    "source": {
+      "providerName": "新浪财经",
+      "sourceUrl": "https://finance.sina.com.cn/auto/2024/article003.html",
+      "type": "CRAWLER"
+    },
+    "publishedAt": "2024-01-15T10:00:00",
+    "relatedStocks": ["002594", "300750", "601633"],
+    "relatedSectors": ["新能源汽车", "锂电池"],
+    "impactFactor": {
+      "factorName": "行业高景气",
+      "weight": 0.8,
+      "category": "INDUSTRY"
+    }
+  },
+  {
+    "id": "mock-004",
+    "title": "美国CPI数据低于预期，市场预期美联储加息周期接近尾声",
+    "content": "美国劳工部公布数据显示，美国12月CPI同比上涨2.6%，低于市场预期的2.7%。数据公布后，市场对美联储加息周期接近尾声的预期增强，全球股市普遍上涨。",
+    "summary": "美国CPI低于预期，加息周期接近尾声",
+    "category": "MACRO",
+    "source": {
+      "providerName": "东方财富",
+      "sourceUrl": "https://www.eastmoney.com/global/2024/article004.html",
+      "type": "CRAWLER"
+    },
+    "publishedAt": "2024-01-15T20:30:00",
+    "relatedStocks": [],
+    "relatedSectors": ["全市场"],
+    "impactFactor": {
+      "factorName": "宏观利好",
+      "weight": 0.75,
+      "category": "MACRO"
+    }
+  },
+  {
+    "id": "mock-005",
+    "title": "某半导体公司发布业绩预告，净利润同比增长200%",
+    "content": "某半导体龙头公司发布2023年业绩预告，预计实现净利润50亿元，同比增长200%。公司表示受益于国产替代加速和下游需求旺盛，业绩超预期增长。",
+    "summary": "半导体公司业绩预告净利增200%",
+    "category": "COMPANY",
+    "source": {
+      "providerName": "新浪财经",
+      "sourceUrl": "https://finance.sina.com.cn/tech/2024/article005.html",
+      "type": "CRAWLER"
+    },
+    "publishedAt": "2024-01-15T11:30:00",
+    "relatedStocks": ["688981", "002371", "603501"],
+    "relatedSectors": ["半导体", "芯片"],
+    "impactFactor": {
+      "factorName": "业绩超预期",
+      "weight": 0.88,
+      "category": "COMPANY"
+    }
+  }
+]

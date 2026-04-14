@@ -1,0 +1,14 @@
+{
+  "name": "etf-ranking-website",
+  "version": "1.0.0",
+  "description": "国内场内ETF涨跌幅排名网站 - 基于OpenCLI的舆情分析",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  }
+}
