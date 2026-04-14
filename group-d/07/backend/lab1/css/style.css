@@ -1,0 +1,604 @@
+/**
+ * 股票行情监控页面样式
+ */
+
+/* 基础样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    min-height: 100vh;
+    color: #fff;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 头部样式 */
+.header {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 24px 32px;
+    margin-bottom: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header h1 {
+    font-size: 28px;
+    font-weight: 600;
+    background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.header-info {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+}
+
+.update-time {
+    color: #888;
+    font-size: 14px;
+}
+
+.update-time span {
+    color: #00d4ff;
+    font-weight: 500;
+}
+
+.market-status {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.market-status.open {
+    background: rgba(0, 212, 255, 0.15);
+    color: #00d4ff;
+}
+
+.market-status.closed {
+    background: rgba(255, 99, 99, 0.15);
+    color: #ff6363;
+}
+
+/* 主要内容区 */
+.main-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    flex: 1;
+}
+
+/* 区块通用样式 */
+.stock-section,
+.sector-section {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+}
+
+.section-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-header h2 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.subtitle {
+    font-size: 13px;
+    color: #888;
+}
+
+/* 股票列表样式 */
+.stock-list {
+    padding: 8px;
+}
+
+.stock-item {
+    display: grid;
+    grid-template-columns: 50px 1fr 100px 100px 100px 100px;
+    gap: 16px;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.stock-item:last-child {
+    border-bottom: none;
+}
+
+.stock-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.stock-rank {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.stock-rank.top1 {
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    color: #1a1a2e;
+}
+
+.stock-rank.top2 {
+    background: linear-gradient(135deg, #c0c0c0, #a0a0a0);
+    color: #1a1a2e;
+}
+
+.stock-rank.top3 {
+    background: linear-gradient(135deg, #cd7f32, #b87333);
+    color: #fff;
+}
+
+.stock-rank.other {
+    background: rgba(255, 255, 255, 0.1);
+    color: #888;
+}
+
+.stock-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stock-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.stock-code {
+    font-size: 12px;
+    color: #666;
+}
+
+.stock-price {
+    font-size: 16px;
+    font-weight: 600;
+    text-align: right;
+}
+
+.stock-change {
+    text-align: right;
+}
+
+.change-percent {
+    font-size: 15px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    display: inline-block;
+}
+
+.change-amount {
+    font-size: 12px;
+    margin-top: 4px;
+    opacity: 0.8;
+}
+
+.stock-volume,
+.stock-turnover {
+    font-size: 13px;
+    color: #888;
+    text-align: right;
+}
+
+/* 涨跌颜色 */
+.up {
+    color: #ff4d4f;
+}
+
+.up .change-percent {
+    background: rgba(255, 77, 79, 0.15);
+}
+
+.down {
+    color: #52c41a;
+}
+
+.down .change-percent {
+    background: rgba(82, 196, 26, 0.15);
+}
+
+.flat {
+    color: #888;
+}
+
+.flat .change-percent {
+    background: rgba(136, 136, 136, 0.15);
+}
+
+/* 行业列表样式 */
+.sector-list {
+    padding: 8px;
+}
+
+.sector-item {
+    padding: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.sector-item:last-child {
+    border-bottom: none;
+}
+
+.sector-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.sector-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.sector-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+}
+
+.sector-change {
+    text-align: right;
+}
+
+.sector-index {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 12px;
+}
+
+.sector-details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.sector-detail-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+}
+
+.sector-detail-label {
+    color: #666;
+}
+
+.sector-detail-value {
+    color: #aaa;
+}
+
+.sector-leading {
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.sector-leading-label {
+    font-size: 12px;
+    color: #666;
+}
+
+.sector-leading-stock {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.leading-name {
+    font-size: 13px;
+    color: #fff;
+}
+
+.leading-change {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+/* 底部样式 */
+.footer {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 20px 32px;
+    margin-top: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-left p {
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.footer-left p:last-child {
+    margin-bottom: 0;
+}
+
+.footer-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.refresh-btn {
+    background: linear-gradient(135deg, #00d4ff, #7b2cbf);
+    border: none;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.refresh-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 212, 255, 0.3);
+}
+
+.refresh-btn:active {
+    transform: translateY(0);
+}
+
+.refresh-btn.refreshing .refresh-icon {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.refresh-icon {
+    font-size: 16px;
+}
+
+.auto-refresh {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #888;
+    cursor: pointer;
+}
+
+.auto-refresh input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #00d4ff;
+    cursor: pointer;
+}
+
+/* 加载状态 */
+.loading {
+    text-align: center;
+    padding: 60px 20px;
+    color: #888;
+    font-size: 14px;
+}
+
+.loading::after {
+    content: '';
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(0, 212, 255, 0.3);
+    border-top-color: #00d4ff;
+    border-radius: 50%;
+    margin-left: 10px;
+    animation: spin 1s linear infinite;
+}
+
+/* 错误状态 */
+.error {
+    text-align: center;
+    padding: 60px 20px;
+    color: #ff6363;
+    font-size: 14px;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+    .main-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .stock-item {
+        grid-template-columns: 40px 1fr 80px 80px;
+        gap: 12px;
+    }
+    
+    .stock-volume,
+    .stock-turnover {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 12px;
+    }
+    
+    .header {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+        padding: 20px;
+    }
+    
+    .header h1 {
+        font-size: 22px;
+    }
+    
+    .header-info {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .stock-item {
+        grid-template-columns: 35px 1fr 70px 70px;
+        gap: 8px;
+        padding: 12px;
+    }
+    
+    .stock-name {
+        font-size: 14px;
+    }
+    
+    .stock-code {
+        font-size: 11px;
+    }
+    
+    .stock-price {
+        font-size: 14px;
+    }
+    
+    .change-percent {
+        font-size: 13px;
+        padding: 3px 8px;
+    }
+    
+    .footer {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+        padding: 16px;
+    }
+    
+    .footer-right {
+        flex-direction: column;
+        gap: 12px;
+    }
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* 实时数据变化闪烁效果 */
+.flash-up {
+    animation: flashUp 1s ease;
+}
+
+.flash-down {
+    animation: flashDown 1s ease;
+}
+
+@keyframes flashUp {
+    0% {
+        background: rgba(255, 77, 79, 0.4);
+        box-shadow: 0 0 20px rgba(255, 77, 79, 0.5);
+    }
+    100% {
+        background: transparent;
+        box-shadow: none;
+    }
+}
+
+@keyframes flashDown {
+    0% {
+        background: rgba(82, 196, 26, 0.4);
+        box-shadow: 0 0 20px rgba(82, 196, 26, 0.5);
+    }
+    100% {
+        background: transparent;
+        box-shadow: none;
+    }
+}
+
+/* 实时指示器 */
+.live-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #00d4ff;
+    margin-left: 12px;
+}
+
+.live-indicator::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: #00d4ff;
+    border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(1.2);
+    }
+}
